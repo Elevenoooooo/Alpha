@@ -1,27 +1,42 @@
 import { ArrowRight, Play, Sparkles } from "lucide-react";
 import { useState } from "react";
 import { Composer } from "../components/chat/Composer";
+import {
+  localAttachment,
+  toWikiReference,
+  type ComposerAttachment,
+  type ComposerSkill,
+  type ComposerWikiReference,
+} from "../components/chat/composerModels";
 import { AnimatedPanel } from "../components/layout/AnimatedPanel";
 import { useWorkbench } from "../context/WorkbenchContext";
 import { recommendedQuestions } from "../data/mockData";
 
 export function HomePage() {
-  const { startProductTask, startWikiTask, notify } = useWorkbench();
+  const { startProductTask, startWikiTask, notify, wikiPages } = useWorkbench();
   const [input, setInput] = useState("");
-  const [file, setFile] = useState<File>();
+  const [attachment, setAttachment] = useState<ComposerAttachment>();
+  const [selectedSkill, setSelectedSkill] = useState<ComposerSkill>();
+  const [wikiReferences, setWikiReferences] = useState<ComposerWikiReference[]>([]);
+  const [wikiDepositMode, setWikiDepositMode] = useState(false);
 
   const submit = () => {
-    if (file || /@wiki/i.test(input)) {
-      if (!file) {
-        notify("请先通过“添加引用”上传需要加工的文件");
+    if (wikiDepositMode) {
+      if (!attachment) {
+        notify("请添加需要沉淀的文件");
         return;
       }
-      startWikiTask(file.name);
+      startWikiTask(attachment.name, attachment.type);
       return;
     }
-    const prompt = input.trim();
+    const context = [
+      selectedSkill ? `使用「${selectedSkill.name}」` : "",
+      wikiReferences.length ? `引用 Wiki：${wikiReferences.map((page) => `${page.title} V${page.version}`).join("、")}` : "",
+      attachment ? `附件：${attachment.name}` : "",
+    ].filter(Boolean).join("；");
+    const prompt = input.trim() || (attachment ? `请分析「${attachment.name}」` : "");
     if (!prompt) return;
-    startProductTask(prompt);
+    startProductTask(context ? `${prompt}（${context}）` : prompt);
   };
 
   return (
@@ -37,9 +52,17 @@ export function HomePage() {
           value={input}
           onChange={setInput}
           onSubmit={submit}
-          selectedFile={file}
-          onSelectFile={setFile}
-          onRemoveFile={() => setFile(undefined)}
+          attachment={attachment}
+          onSelectLocalFile={(file) => setAttachment(localAttachment(file))}
+          onRemoveAttachment={() => setAttachment(undefined)}
+          selectedSkill={selectedSkill}
+          onSelectSkill={setSelectedSkill}
+          wikiReferences={wikiReferences}
+          availableWikiReferences={wikiPages.map(toWikiReference)}
+          onChangeWikiReferences={setWikiReferences}
+          wikiDepositMode={wikiDepositMode}
+          onChangeWikiDepositMode={setWikiDepositMode}
+          onNotify={notify}
           placeholder="随心输入，说出你的创意"
         />
 

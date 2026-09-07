@@ -1,6 +1,6 @@
-import { Download, FileText, Maximize2 } from "lucide-react";
+import { BookOpen, Download, FileText, Maximize2 } from "lucide-react";
 
-export function DocumentCard({ onOpen }: { onOpen: () => void }) {
+export function DocumentCard({ onOpen, onDeposit }: { onOpen: () => void; onDeposit: () => void }) {
   return (
     <article className="document-card answer-card">
       <header className="answer-card-head">
@@ -16,6 +16,7 @@ export function DocumentCard({ onOpen }: { onOpen: () => void }) {
       <footer className="card-actions">
         <button className="primary-button" onClick={onOpen}><Maximize2 />查看全文</button>
         <button className="secondary-button"><Download />下载</button>
+        <button className="secondary-button" onClick={onDeposit}><BookOpen />沉淀到 Wiki</button>
       </footer>
     </article>
   );

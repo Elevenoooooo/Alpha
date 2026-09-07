@@ -1,6 +1,14 @@
 import { ArrowLeft, Bot, CheckCircle2, FileText, Sparkles, X } from "lucide-react";
 import { useState } from "react";
 import { Composer } from "../components/chat/Composer";
+import {
+  generatedAnalysisAttachment,
+  localAttachment,
+  toWikiReference,
+  type ComposerAttachment,
+  type ComposerSkill,
+  type ComposerWikiReference,
+} from "../components/chat/composerModels";
 import { DocumentCard } from "../components/chat/DocumentCard";
 import { ExecutionCard } from "../components/chat/ExecutionCard";
 import { PlanCard } from "../components/chat/PlanCard";
@@ -28,9 +36,13 @@ export function ConversationPage() {
     submitWikiApproval,
     startWikiTask,
     notify,
+    wikiPages,
   } = useWorkbench();
   const [input, setInput] = useState("");
-  const [file, setFile] = useState<File>();
+  const [attachment, setAttachment] = useState<ComposerAttachment>();
+  const [selectedSkill, setSelectedSkill] = useState<ComposerSkill>();
+  const [wikiReferences, setWikiReferences] = useState<ComposerWikiReference[]>([]);
+  const [wikiDepositMode, setWikiDepositMode] = useState(false);
   const [detailProduct, setDetailProduct] = useState<Product>();
   const [docOpen, setDocOpen] = useState(false);
   const [diffOpen, setDiffOpen] = useState(false);
@@ -38,14 +50,16 @@ export function ConversationPage() {
   const isWikiConversation = Boolean(wikiTask && productFlow.stage === "idle");
 
   const submit = () => {
-    if (file || /@wiki/i.test(input)) {
-      if (!file) {
-        notify("请先上传需要加工的文件");
+    if (wikiDepositMode) {
+      if (!attachment) {
+        notify("请添加需要沉淀的文件");
         return;
       }
-      startWikiTask(file.name);
+      const result = startWikiTask(attachment.name, attachment.type);
+      if (result === "blocked") return;
       setInput("");
-      setFile(undefined);
+      setAttachment(undefined);
+      setWikiDepositMode(false);
       return;
     }
     if (isWikiConversation && wikiTask && ["ready", "rejected"].includes(wikiTask.status)) {
@@ -53,10 +67,27 @@ export function ConversationPage() {
       setInput("");
       return;
     }
-    if (input.trim()) {
-      startProductTask(input.trim());
+    if (input.trim() || attachment) {
+      const context = [
+        selectedSkill ? `使用「${selectedSkill.name}」` : "",
+        wikiReferences.length ? `引用 Wiki：${wikiReferences.map((page) => `${page.title} V${page.version}`).join("、")}` : "",
+        attachment ? `附件：${attachment.name}` : "",
+      ].filter(Boolean).join("；");
+      const prompt = input.trim() || `请分析「${attachment?.name}」`;
+      startProductTask(context ? `${prompt}（${context}）` : prompt);
       setInput("");
+      setAttachment(undefined);
+      setSelectedSkill(undefined);
+      setWikiReferences([]);
     }
+  };
+
+  const depositGeneratedDocument = () => {
+    setAttachment(generatedAnalysisAttachment);
+    setSelectedSkill(undefined);
+    setWikiReferences([]);
+    setWikiDepositMode(true);
+    notify("已带入当前对话产出的文档，请补充加工要求后发送");
   };
 
   const resultText =
@@ -115,7 +146,7 @@ export function ConversationPage() {
                     <>
                       <div className="thinking-label complete"><CheckCircle2 />已完成思考，耗时 3 秒</div>
                       <p className="text-answer">{resultText}<button className="citation" title="查看引用依据">1</button></p>
-                      {productFlow.kind !== "quick" && <DocumentCard onOpen={() => setDocOpen(true)} />}
+                      {productFlow.kind !== "quick" && <DocumentCard onOpen={() => setDocOpen(true)} onDeposit={depositGeneratedDocument} />}
                       {productFlow.kind === "product" && <ProductShelf products={plans} onUse={useProduct} onDetail={setDetailProduct} />}
                       <ResponseActions copyText={resultText} />
                     </>
@@ -132,9 +163,17 @@ export function ConversationPage() {
           value={input}
           onChange={setInput}
           onSubmit={submit}
-          selectedFile={file}
-          onSelectFile={setFile}
-          onRemoveFile={() => setFile(undefined)}
+          attachment={attachment}
+          onSelectLocalFile={(file) => setAttachment(localAttachment(file))}
+          onRemoveAttachment={() => setAttachment(undefined)}
+          selectedSkill={selectedSkill}
+          onSelectSkill={setSelectedSkill}
+          wikiReferences={wikiReferences}
+          availableWikiReferences={wikiPages.map(toWikiReference)}
+          onChangeWikiReferences={setWikiReferences}
+          wikiDepositMode={wikiDepositMode}
+          onChangeWikiDepositMode={setWikiDepositMode}
+          onNotify={notify}
           placeholder={isWikiConversation && wikiTask?.status === "rejected" ? "根据驳回意见告诉 Alpha 如何调整…" : "继续追问，或提一个新目标…"}
         />
         <p>Alpha 提供建议与依据，最终决策始终由你掌控</p>
