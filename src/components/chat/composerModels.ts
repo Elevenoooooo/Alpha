@@ -1,13 +1,6 @@
-import type { WikiPage } from "../../domain/types";
+import type { MessageAttachment, MessageResourceReference, WikiPage } from "../../domain/types";
 
-export type ComposerAttachment = {
-  id: string;
-  name: string;
-  type: string;
-  size: string;
-  source: "local" | "conversation";
-  file?: File;
-};
+export type ComposerAttachment = MessageAttachment;
 
 export type ComposerSkill = {
   id: string;
@@ -17,12 +10,7 @@ export type ComposerSkill = {
   official?: boolean;
 };
 
-export type ComposerWikiReference = {
-  id: string;
-  title: string;
-  folder: string;
-  version: number;
-};
+export type ComposerResourceReference = MessageResourceReference;
 
 export const demoSkills: ComposerSkill[] = [
   {
@@ -58,14 +46,36 @@ export const demoSkills: ComposerSkill[] = [
   },
 ];
 
-export function toWikiReference(page: WikiPage): ComposerWikiReference {
+export function toWikiResource(page: WikiPage): ComposerResourceReference {
   return {
     id: page.id,
     title: page.title,
-    folder: page.folder,
+    kind: "wiki",
+    meta: `${page.folder} · 当前发布版本 V${page.currentVersion}`,
     version: page.currentVersion,
   };
 }
+
+export const demoConversationResources: ComposerResourceReference[] = [
+  {
+    id: "conversation-phone-analysis",
+    title: "手机类目延保经营与方案设计依据.docx",
+    kind: "conversation",
+    meta: "当前对话 · Word · 286 KB",
+  },
+  {
+    id: "conversation-penetration-report",
+    title: "手机 8 月延保渗透率分析.xlsx",
+    kind: "conversation",
+    meta: "历史对话 · Excel · 1.2 MB",
+  },
+  {
+    id: "conversation-product-comparison",
+    title: "延保产品方案对比.pdf",
+    kind: "conversation",
+    meta: "历史对话 · PDF · 2.8 MB",
+  },
+];
 
 export function fileTypeLabel(fileName: string, mimeType = "") {
   const extension = fileName.split(".").pop()?.toLowerCase();

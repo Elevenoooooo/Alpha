@@ -133,7 +133,7 @@ export function WikiPage() {
     <div className="wiki-page page-surface" ref={pageSurfaceRef}>
       <AnimatedPanel className="wiki-center">
         {panel === "library" && <header className="page-header wiki-page-header">
-          <div><h1>资产中心</h1><p>以 Schema 约束加工，将审批通过的业务资料沉淀为可追溯 Wiki。</p></div>
+          <div><h1>资产中心</h1></div>
           <div className="wiki-header-actions">
             <div className="identity-switch"><button className={identity === "user" ? "active" : ""} onClick={() => { setIdentity("user"); setPanel("library"); }}>普通用户</button><button className={identity === "reviewer" ? "active" : ""} onClick={() => { setIdentity("reviewer"); setPanel("library"); }}>审核员</button></div>
             <button className="secondary-button" onClick={() => setPanel("mine")}><FileDiff />我的提交{minePendingCount > 0 && <b>{minePendingCount}</b>}</button>
@@ -170,7 +170,6 @@ export function WikiPage() {
         ) : panel === "mine" ? (
           <ApprovalList
             title="我的 Wiki 提交"
-            subtitle="查看自己提交的审批状态和变更详情"
             tabs={["全部", "审核中", "审核通过", "审核失败"]}
             active={mineFilter}
             onTab={(tab) => setMineFilter(tab as typeof mineFilter)}
@@ -181,7 +180,6 @@ export function WikiPage() {
         ) : (
           <ApprovalList
             title="待我审核"
-            subtitle="仅展示他人提交给你的变更；自己提交的 Wiki 会自动分配其他审核员"
             tabs={["待审核", "审核完成"]}
             active={reviewFilter}
             onTab={(tab) => setReviewFilter(tab as typeof reviewFilter)}
@@ -273,7 +271,7 @@ function WikiArticleLine({ line }: { line: string }) {
 }
 
 function SchemaPanel() {
-  return <article className="schema-panel"><div className="wiki-breadcrumb">业务 Wiki <ChevronRight /> Schema</div><header><div><h1>Wiki Schema</h1><p>约束 Wiki Page 的结构、来源和版本字段。</p></div><span className="immutable-tag"><ShieldCheck />仅管理员维护</span></header><pre>{`page:\n  title: string\n  folder: string\n  version: integer\n  status: published | pending | rejected\n  sources:\n    - raw_id\n    - locator\n  content: rich_text\n  approved_by: user_id\n  approved_at: datetime`}</pre><div className="schema-note">每个加工任务绑定具体 Schema 版本，避免审批期间规则变化导致前后结果不一致。</div></article>;
+  return <article className="schema-panel"><div className="wiki-breadcrumb">业务 Wiki <ChevronRight /> Schema</div><header><div><h1>Wiki Schema</h1></div><span className="immutable-tag"><ShieldCheck />仅管理员维护</span></header><pre>{`page:\n  title: string\n  folder: string\n  version: integer\n  status: published | pending | rejected\n  sources:\n    - raw_id\n    - locator\n  content: rich_text\n  approved_by: user_id\n  approved_at: datetime`}</pre><div className="schema-note">每个加工任务绑定具体 Schema 版本，避免审批期间规则变化导致前后结果不一致。</div></article>;
 }
 
 function RawPanel({ file }: { file?: RawFile }) {
@@ -356,8 +354,8 @@ function rawContinuousDocument(name: string): RawPreviewPage {
   return { title: "延保退款口径补充说明", lead: "该文档连续说明退款回冲、订单去重及异常处理口径。", sections: [{ title: "一、适用范围", paragraphs: ["适用于延保销量、保费和渗透率相关经营指标。"] }, { title: "二、退款完成日", paragraphs: ["退款订单在退款完成日回冲，不以申请日或审核日作为归属时间。"] }, { title: "三、跨自然日", paragraphs: ["跨自然日退款在完成退款当日冲减，不回写已封账的历史日报。"] }, { title: "四、订单去重", paragraphs: ["同一主商品订单只计算一次，附属服务单不重复进入分母。"] }, { title: "五、异常处理", paragraphs: ["部分退款、重复回调和服务换绑进入异常明细，由运营确认有效状态。"] }, { title: "六、版本维护", paragraphs: ["任何口径变化必须审批并创建新版本。"] }] };
 }
 
-function ApprovalList({ title, subtitle, tabs, active, onTab, approvals, onOpen, onBack }: { title: string; subtitle: string; tabs: string[]; active: string; onTab: (tab: string) => void; approvals: WikiApproval[]; onOpen: (approval: WikiApproval) => void; onBack: () => void }) {
-  return <section className="approval-page"><header><button className="approval-back-button" onClick={onBack} aria-label="返回资产中心" title="返回资产中心"><ArrowLeft /></button><div><h1>{title}</h1><p>{subtitle}</p></div></header><nav className="filter-tabs">{tabs.map((tab) => <button key={tab} className={active === tab ? "active" : ""} onClick={() => onTab(tab)}>{tab}</button>)}</nav><div className="approval-table"><div className="approval-row approval-head"><span>变更名称</span><span>提交人</span><span>影响 Pages</span><span>提交时间</span><span>审批人</span><span>状态</span><span></span></div>{approvals.map((item) => <div className="approval-row" key={item.id}><span><strong>{item.title}</strong></span><span>{item.submitter}</span><span>{item.affectedPages.length}</span><span>{item.submittedAt}</span><span className="reviewer-cell">{item.reviewer ?? "—"}</span><span>{approvalBadge(item.status)}</span><button onClick={() => onOpen(item)}>{item.status === "pending" ? "查看变更" : "查看详情"} <ChevronRight /></button></div>)}{!approvals.length && <div className="approval-empty"><h2>当前没有相关审批</h2></div>}</div></section>;
+function ApprovalList({ title, tabs, active, onTab, approvals, onOpen, onBack }: { title: string; tabs: string[]; active: string; onTab: (tab: string) => void; approvals: WikiApproval[]; onOpen: (approval: WikiApproval) => void; onBack: () => void }) {
+  return <section className="approval-page"><header><button className="approval-back-button" onClick={onBack} aria-label="返回资产中心" title="返回资产中心"><ArrowLeft /></button><div><h1>{title}</h1></div></header><nav className="filter-tabs">{tabs.map((tab) => <button key={tab} className={active === tab ? "active" : ""} onClick={() => onTab(tab)}>{tab}</button>)}</nav><div className="approval-table"><div className="approval-row approval-head"><span>变更名称</span><span>提交人</span><span>影响 Pages</span><span>提交时间</span><span>审批人</span><span>状态</span><span></span></div>{approvals.map((item) => <div className="approval-row" key={item.id}><span><strong>{item.title}</strong></span><span>{item.submitter}</span><span>{item.affectedPages.length}</span><span>{item.submittedAt}</span><span className="reviewer-cell">{item.reviewer ?? "—"}</span><span>{approvalBadge(item.status)}</span><button onClick={() => onOpen(item)}>{item.status === "pending" ? "查看变更" : "查看详情"} <ChevronRight /></button></div>)}{!approvals.length && <div className="approval-empty"><h2>当前没有相关审批</h2></div>}</div></section>;
 }
 
 function VersionHistory({ page, reviewer, onClose, onRollback }: { page: WikiPageType; reviewer: boolean; onClose: () => void; onRollback: (version: number) => void }) {

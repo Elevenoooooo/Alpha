@@ -6,20 +6,24 @@ import {
   FileText,
   FileUp,
   Image,
+  MessageSquareText,
   Plus,
   Search,
   Sparkles,
+  Users,
   X,
 } from "lucide-react";
-import { useEffect, useMemo, useRef, useState, type KeyboardEvent, type ReactNode } from "react";
+import { useEffect, useMemo, useRef, useState, type CSSProperties, type KeyboardEvent, type ReactNode } from "react";
 import {
+  demoConversationResources,
   demoSkills,
   type ComposerAttachment,
+  type ComposerResourceReference,
   type ComposerSkill,
-  type ComposerWikiReference,
 } from "./composerModels";
 
-type MenuPanel = "root" | "skills" | "wiki" | "wiki-picker";
+type MenuPanel = "root" | "skills" | "resources";
+type ResourceTab = "wiki" | "conversation" | "team";
 
 type ComposerProps = {
   value: string;
@@ -32,9 +36,9 @@ type ComposerProps = {
   onRemoveAttachment?: () => void;
   selectedSkill?: ComposerSkill;
   onSelectSkill?: (skill?: ComposerSkill) => void;
-  wikiReferences?: ComposerWikiReference[];
-  availableWikiReferences?: ComposerWikiReference[];
-  onChangeWikiReferences?: (references: ComposerWikiReference[]) => void;
+  resourceReferences?: ComposerResourceReference[];
+  availableWikiResources?: ComposerResourceReference[];
+  onChangeResourceReferences?: (references: ComposerResourceReference[]) => void;
   wikiDepositMode?: boolean;
   onChangeWikiDepositMode?: (active: boolean) => void;
   onNotify?: (message: string) => void;
@@ -51,17 +55,20 @@ export function Composer({
   onRemoveAttachment,
   selectedSkill,
   onSelectSkill,
-  wikiReferences = [],
-  availableWikiReferences = [],
-  onChangeWikiReferences,
+  resourceReferences = [],
+  availableWikiResources = [],
+  onChangeResourceReferences,
   wikiDepositMode = false,
   onChangeWikiDepositMode,
   onNotify,
 }: ComposerProps) {
   const [panel, setPanel] = useState<MenuPanel>();
   const [skillQuery, setSkillQuery] = useState("");
-  const [wikiQuery, setWikiQuery] = useState("");
+  const [resourceQuery, setResourceQuery] = useState("");
+  const [resourceTab, setResourceTab] = useState<ResourceTab>("wiki");
+  const [menuPlacement, setMenuPlacement] = useState({ direction: "up" as "up" | "down", resourceListHeight: 286 });
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const attachButtonRef = useRef<HTMLButtonElement>(null);
   const menuRootRef = useRef<HTMLDivElement>(null);
 
   const filteredSkills = useMemo(() => {
@@ -70,11 +77,13 @@ export function Composer({
     return demoSkills.filter((skill) => `${skill.name}${skill.description}${skill.owner}`.toLowerCase().includes(query));
   }, [skillQuery]);
 
-  const filteredWikiReferences = useMemo(() => {
-    const query = wikiQuery.trim().toLowerCase();
-    if (!query) return availableWikiReferences;
-    return availableWikiReferences.filter((page) => `${page.title}${page.folder}`.toLowerCase().includes(query));
-  }, [availableWikiReferences, wikiQuery]);
+  const filteredResources = useMemo(() => {
+    const allResources = [...availableWikiResources, ...demoConversationResources];
+    const byTab = allResources.filter((resource) => resource.kind === resourceTab);
+    const query = resourceQuery.trim().toLowerCase();
+    if (!query) return byTab;
+    return byTab.filter((resource) => `${resource.title}${resource.meta}`.toLowerCase().includes(query));
+  }, [availableWikiResources, resourceQuery, resourceTab]);
 
   useEffect(() => {
     if (!panel) return;
@@ -106,7 +115,7 @@ export function Composer({
 
   const activateWikiDeposit = () => {
     onSelectSkill?.(undefined);
-    onChangeWikiReferences?.([]);
+    onChangeResourceReferences?.([]);
     onChangeWikiDepositMode?.(true);
     setPanel(undefined);
   };
@@ -133,18 +142,38 @@ export function Composer({
     setPanel(undefined);
   };
 
-  const toggleWikiReference = (page: ComposerWikiReference) => {
-    const exists = wikiReferences.some((item) => item.id === page.id);
-    onChangeWikiReferences?.(exists ? wikiReferences.filter((item) => item.id !== page.id) : [...wikiReferences, page]);
+  const toggleResourceReference = (resource: ComposerResourceReference) => {
+    onChangeWikiDepositMode?.(false);
+    const exists = resourceReferences.some((item) => item.id === resource.id);
+    onChangeResourceReferences?.(
+      exists ? resourceReferences.filter((item) => item.id !== resource.id) : [...resourceReferences, resource],
+    );
   };
 
   const activePlaceholder = wikiDepositMode
     ? "请添加需要沉淀的资料，也可以补充加工要求"
     : placeholder;
 
+  const toggleMenu = () => {
+    if (panel) {
+      setPanel(undefined);
+      return;
+    }
+    const rect = attachButtonRef.current?.getBoundingClientRect();
+    if (rect) {
+      const direction = rect.top > window.innerHeight / 2 ? "up" : "down";
+      const availableHeight = direction === "up" ? rect.top - 24 : window.innerHeight - rect.bottom - 24;
+      setMenuPlacement({
+        direction,
+        resourceListHeight: Math.max(112, Math.min(286, availableHeight - 168)),
+      });
+    }
+    setPanel("root");
+  };
+
   return (
     <div className={`composer ${large ? "composer-large" : ""} ${wikiDepositMode ? "is-wiki-deposit" : ""}`}>
-      {(wikiDepositMode || selectedSkill || wikiReferences.length > 0 || attachment) && (
+      {(wikiDepositMode || selectedSkill || resourceReferences.length > 0 || attachment) && (
         <div className="composer-contexts" aria-label="本轮已选择的上下文">
           {wikiDepositMode && (
             <button className="context-chip wiki-mode-chip" onClick={() => onChangeWikiDepositMode?.(false)} title="退出 Wiki 沉淀模式">
@@ -156,14 +185,15 @@ export function Composer({
               <Sparkles /><span>{selectedSkill.name}</span><X />
             </button>
           )}
-          {wikiReferences.map((page) => (
+          {resourceReferences.map((resource) => (
             <button
-              key={page.id}
-              className="context-chip wiki-reference-chip"
-              onClick={() => onChangeWikiReferences?.(wikiReferences.filter((item) => item.id !== page.id))}
-              title="移除 Wiki 引用"
+              key={resource.id}
+              className="context-chip resource-reference-chip"
+              onClick={() => onChangeResourceReferences?.(resourceReferences.filter((item) => item.id !== resource.id))}
+              title="移除引用"
             >
-              <BookOpen /><span>{page.title} · V{page.version}</span><X />
+              {resource.kind === "wiki" ? <BookOpen /> : resource.kind === "conversation" ? <MessageSquareText /> : <Users />}
+              <span>{resource.title}{resource.version ? ` · V${resource.version}` : ""}</span><X />
             </button>
           ))}
           {attachment && <AttachmentChip attachment={attachment} onRemove={onRemoveAttachment} />}
@@ -181,8 +211,9 @@ export function Composer({
       <div className="composer-actions">
         <div className="attach-wrap" ref={menuRootRef}>
           <button
+            ref={attachButtonRef}
             className={`attach-button ${panel ? "active" : ""}`}
-            onClick={() => setPanel((current) => (current ? undefined : "root"))}
+            onClick={toggleMenu}
             aria-label="添加内容"
             aria-expanded={Boolean(panel)}
           >
@@ -190,18 +221,40 @@ export function Composer({
           </button>
 
           {panel && (
-            <div className="attach-menu" role="dialog" aria-label="添加内容">
+            <div
+              className={`attach-menu ${panel === "resources" ? "resource-menu" : ""} ${menuPlacement.direction === "down" ? "open-down" : ""}`}
+              style={{ "--resource-list-height": `${menuPlacement.resourceListHeight}px` } as CSSProperties}
+              role="dialog"
+              aria-label="添加内容"
+            >
               {panel === "root" && (
                 <>
-                  <MenuAction icon={<FileUp />} title="上传本地文件" onClick={() => fileInputRef.current?.click()} />
+                  <MenuAction
+                    icon={<FileUp />}
+                    title="上传本地文件"
+                    detail="支持图片、PDF、Word、PPT、Excel 等格式"
+                    onClick={() => fileInputRef.current?.click()}
+                  />
                   <MenuAction
                     icon={<Sparkles />}
                     title="使用技能"
-                    detail={wikiDepositMode ? "Wiki 沉淀模式下不可用" : "选择一个技能处理本轮任务"}
+                    detail={wikiDepositMode ? "请先退出 @Wiki 沉淀模式" : "选择 Skill 辅助完成本轮任务"}
                     disabled={wikiDepositMode}
                     onClick={() => setPanel("skills")}
                   />
-                  <MenuAction icon={<BookOpen />} title="业务 Wiki" detail="引用已发布内容，或开始沉淀" onClick={() => setPanel("wiki")} />
+                  <MenuAction
+                    icon={<BookOpen />}
+                    title="引用 Wiki 或文件"
+                    detail={wikiDepositMode ? "请先退出 @Wiki 沉淀模式" : "引用已发布 Wiki 或会话文档"}
+                    disabled={wikiDepositMode}
+                    onClick={() => setPanel("resources")}
+                  />
+                  <MenuAction
+                    icon={<FileUp />}
+                    title="沉淀 Wiki"
+                    detail="也可在输入框直接输入 @Wiki"
+                    onClick={activateWikiDeposit}
+                  />
                 </>
               )}
 
@@ -224,39 +277,55 @@ export function Composer({
                 </PickerPanel>
               )}
 
-              {panel === "wiki" && (
-                <PickerPanel title="业务 Wiki" onBack={() => setPanel("root")}>
-                  <div className="wiki-action-list">
-                    <MenuAction
-                      icon={<BookOpen />}
-                      title="引用 Wiki"
-                      detail={wikiDepositMode ? "请先退出 @Wiki 沉淀模式" : "选择已审批发布的 Wiki Pages"}
-                      disabled={wikiDepositMode}
-                      onClick={() => setPanel("wiki-picker")}
-                    />
-                    <MenuAction icon={<FileUp />} title="沉淀到 Wiki" detail="在输入框中开启 @Wiki 模式" onClick={activateWikiDeposit} />
+              {panel === "resources" && (
+                <PickerPanel title="引用 Wiki 或文件" onBack={() => setPanel("root")}>
+                  <SearchField value={resourceQuery} onChange={setResourceQuery} placeholder="搜索 Wiki 或会话文档" />
+                  <div className="resource-tabs" role="tablist" aria-label="资源类型">
+                    {([
+                      ["wiki", "Wiki"],
+                      ["conversation", "会话文档"],
+                      ["team", "团队文档"],
+                    ] as Array<[ResourceTab, string]>).map(([id, label]) => (
+                      <button
+                        key={id}
+                        className={resourceTab === id ? "active" : ""}
+                        onClick={() => setResourceTab(id)}
+                        role="tab"
+                        aria-selected={resourceTab === id}
+                      >
+                        {label}
+                      </button>
+                    ))}
                   </div>
-                </PickerPanel>
-              )}
-
-              {panel === "wiki-picker" && (
-                <PickerPanel title="引用 Wiki" onBack={() => setPanel("wiki")}>
-                  <SearchField value={wikiQuery} onChange={setWikiQuery} placeholder="搜索 Wiki Page" />
-                  <div className="picker-list wiki-picker-list">
-                    {filteredWikiReferences.map((page) => {
-                      const selected = wikiReferences.some((item) => item.id === page.id);
+                  <div className="picker-list resource-picker-list">
+                    {filteredResources.map((resource) => {
+                      const selected = resourceReferences.some((item) => item.id === resource.id);
                       return (
-                        <button key={page.id} className={`picker-item ${selected ? "selected" : ""}`} onClick={() => toggleWikiReference(page)}>
+                        <button
+                          key={resource.id}
+                          className={`picker-item ${selected ? "selected" : ""}`}
+                          onClick={() => toggleResourceReference(resource)}
+                        >
+                          <span className="picker-item-icon resource-item-icon">
+                            {resource.kind === "wiki" ? <BookOpen /> : resource.kind === "conversation" ? <MessageSquareText /> : <Users />}
+                          </span>
                           <span className="picker-item-copy">
-                            <strong>{page.title}</strong>
-                            <small>{page.folder} · 当前发布版本 V{page.version}</small>
+                            <strong>{resource.title}</strong>
+                            <small>{resource.meta}</small>
                           </span>
                           {selected && <Check className="picker-check" />}
                         </button>
                       );
                     })}
+                    {resourceTab === "team" && (
+                      <div className="resource-empty">
+                        <Users />
+                        <strong>团队文档即将支持</strong>
+                        <span>本次 Demo 先保留能力入口，不接入团队空间。</span>
+                      </div>
+                    )}
                   </div>
-                  <button className="picker-done" onClick={() => setPanel(undefined)}>完成 · 已选 {wikiReferences.length}</button>
+                  <button className="picker-done" onClick={() => setPanel(undefined)}>完成 · 已选 {resourceReferences.length}</button>
                 </PickerPanel>
               )}
             </div>

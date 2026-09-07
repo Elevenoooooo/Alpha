@@ -17,8 +17,10 @@ import {
 } from "../data/mockData";
 import type {
   AppView,
+  MessageAttachment,
   Product,
   ProductFlow,
+  ProductRequestContext,
   ProductStatus,
   RawFile,
   WikiApproval,
@@ -32,7 +34,7 @@ type WorkbenchValue = {
   view: AppView;
   setView: (view: AppView) => void;
   productFlow: ProductFlow;
-  startProductTask: (prompt: string) => void;
+  startProductTask: (prompt: string, context?: ProductRequestContext) => void;
   confirmProductPlan: () => void;
   resetConversation: () => void;
   products: Product[];
@@ -47,7 +49,13 @@ type WorkbenchValue = {
   wikiTask?: WikiTask;
   approval?: WikiApproval;
   approvalHistory: WikiApproval[];
-  startWikiTask: (fileName: string, fileType?: string, submitter?: string) => StartWikiResult;
+  startWikiTask: (
+    fileName: string,
+    fileType?: string,
+    submitter?: string,
+    attachment?: MessageAttachment,
+    instruction?: string,
+  ) => StartWikiResult;
   pauseWikiTask: () => void;
   resumeWikiTask: () => void;
   reviseWikiTask: () => void;
@@ -147,9 +155,15 @@ export function WorkbenchProvider({ children }: { children: ReactNode }) {
     return () => window.clearInterval(timer);
   }, [wikiTask?.status, wikiTask?.id]);
 
-  const startProductTask = useCallback((prompt: string) => {
+  const startProductTask = useCallback((prompt: string, context?: ProductRequestContext) => {
     const kind = /设计|方案|产品/.test(prompt) ? "product" : /经营|分析|同比|原因/.test(prompt) ? "analysis" : "quick";
-    setProductFlow({ stage: kind === "product" ? "planning" : kind === "quick" ? "result" : "running", kind, prompt, executionStep: 0 });
+    setProductFlow({
+      stage: kind === "product" ? "planning" : kind === "quick" ? "result" : "running",
+      kind,
+      prompt,
+      executionStep: 0,
+      context,
+    });
     setView("conversation");
     if (kind === "analysis") {
       timersRef.current.push(
@@ -212,7 +226,13 @@ export function WorkbenchProvider({ children }: { children: ReactNode }) {
   );
 
   const startWikiTask = useCallback(
-    (fileName: string, explicitType?: string, submitter = "晨雨"): StartWikiResult => {
+    (
+      fileName: string,
+      explicitType?: string,
+      submitter = "晨雨",
+      attachment?: MessageAttachment,
+      instruction?: string,
+    ): StartWikiResult => {
       const published = rawFiles.find((file) => file.name === fileName);
       if (published) {
         setSelectedWikiPageId(published.relatedPageIds[0] ?? initialWikiPages[0].id);
@@ -240,6 +260,8 @@ export function WorkbenchProvider({ children }: { children: ReactNode }) {
         revision: 1,
         conversationId: `conversation-${id}`,
         submitter,
+        attachment,
+        instruction,
       });
       setApproval(undefined);
       setView("conversation");

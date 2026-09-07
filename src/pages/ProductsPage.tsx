@@ -17,7 +17,7 @@ export function ProductsPage() {
     <div className="products-page page-surface">
       <AnimatedPanel>
         <header className="page-header">
-          <div><h1>我的产品</h1><p>会话中确认使用的方案在这里进入正式询报价流转。</p></div>
+          <div><h1>我的产品</h1></div>
           <button className="primary-button" onClick={() => { startProductTask("为手机类目设计 3 款差异化延保方案"); }}><PackageCheck />设计新产品</button>
         </header>
 

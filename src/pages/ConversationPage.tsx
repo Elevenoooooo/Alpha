@@ -4,16 +4,17 @@ import { Composer } from "../components/chat/Composer";
 import {
   generatedAnalysisAttachment,
   localAttachment,
-  toWikiReference,
+  toWikiResource,
   type ComposerAttachment,
+  type ComposerResourceReference,
   type ComposerSkill,
-  type ComposerWikiReference,
 } from "../components/chat/composerModels";
 import { DocumentCard } from "../components/chat/DocumentCard";
 import { ExecutionCard } from "../components/chat/ExecutionCard";
 import { PlanCard } from "../components/chat/PlanCard";
 import { ProductShelf } from "../components/chat/ProductShelf";
 import { ResponseActions } from "../components/chat/ResponseActions";
+import { UserMessage } from "../components/chat/UserMessage";
 import { WikiProcessingCard } from "../components/chat/WikiProcessingCard";
 import { AnimatedPanel } from "../components/layout/AnimatedPanel";
 import { WikiDiffPanel } from "../components/wiki/WikiDiffPanel";
@@ -41,7 +42,7 @@ export function ConversationPage() {
   const [input, setInput] = useState("");
   const [attachment, setAttachment] = useState<ComposerAttachment>();
   const [selectedSkill, setSelectedSkill] = useState<ComposerSkill>();
-  const [wikiReferences, setWikiReferences] = useState<ComposerWikiReference[]>([]);
+  const [resourceReferences, setResourceReferences] = useState<ComposerResourceReference[]>([]);
   const [wikiDepositMode, setWikiDepositMode] = useState(false);
   const [detailProduct, setDetailProduct] = useState<Product>();
   const [docOpen, setDocOpen] = useState(false);
@@ -55,7 +56,7 @@ export function ConversationPage() {
         notify("请添加需要沉淀的文件");
         return;
       }
-      const result = startWikiTask(attachment.name, attachment.type);
+      const result = startWikiTask(attachment.name, attachment.type, undefined, attachment, input.trim() || undefined);
       if (result === "blocked") return;
       setInput("");
       setAttachment(undefined);
@@ -68,26 +69,28 @@ export function ConversationPage() {
       return;
     }
     if (input.trim() || attachment) {
-      const context = [
-        selectedSkill ? `使用「${selectedSkill.name}」` : "",
-        wikiReferences.length ? `引用 Wiki：${wikiReferences.map((page) => `${page.title} V${page.version}`).join("、")}` : "",
-        attachment ? `附件：${attachment.name}` : "",
-      ].filter(Boolean).join("；");
-      const prompt = input.trim() || `请分析「${attachment?.name}」`;
-      startProductTask(context ? `${prompt}（${context}）` : prompt);
+      const prompt = input.trim() || "请分析这份资料";
+      startProductTask(prompt, {
+        attachment,
+        skill: selectedSkill ? { id: selectedSkill.id, name: selectedSkill.name } : undefined,
+        resources: resourceReferences,
+      });
       setInput("");
       setAttachment(undefined);
       setSelectedSkill(undefined);
-      setWikiReferences([]);
+      setResourceReferences([]);
     }
   };
 
   const depositGeneratedDocument = () => {
     setAttachment(generatedAnalysisAttachment);
     setSelectedSkill(undefined);
-    setWikiReferences([]);
+    setResourceReferences([]);
     setWikiDepositMode(true);
     notify("已带入当前对话产出的文档，请补充加工要求后发送");
+    window.requestAnimationFrame(() => {
+      document.getElementById("conversation-composer")?.scrollIntoView({ behavior: "smooth", block: "end" });
+    });
   };
 
   const resultText =
@@ -101,7 +104,7 @@ export function ConversationPage() {
     <div className="conversation-page">
       <header className="conversation-topbar">
         <button onClick={() => setView("home")}><ArrowLeft /></button>
-        <div><strong>{isWikiConversation ? "业务 Wiki 加工" : "手机类目延保产品设计"}</strong><small>{isWikiConversation ? "加工结果仅在当前会话调整" : "产品设计任务"}</small></div>
+        <div><strong>{isWikiConversation ? "业务 Wiki 加工" : "手机类目延保产品设计"}</strong></div>
         {isWikiConversation && wikiTask?.status === "submitted" && <span className="queue-lock">全局 Wiki 队列已锁定至审批完成</span>}
       </header>
 
@@ -109,7 +112,17 @@ export function ConversationPage() {
         <div className="conversation-feed">
           {isWikiConversation && wikiTask ? (
             <AnimatedPanel className="turn-block">
-              <div className="user-row"><div className="user-bubble">@Wiki 请加工并沉淀「{wikiTask.fileName}」</div></div>
+              <UserMessage
+                wikiMode
+                text={wikiTask.instruction || "请按业务 Wiki Schema 提取可复用知识"}
+                attachment={wikiTask.attachment ?? {
+                  id: `wiki-message-${wikiTask.id}`,
+                  name: wikiTask.fileName,
+                  type: wikiTask.fileType,
+                  size: "",
+                  source: "local",
+                }}
+              />
               <div className="assistant-row">
                 <span className="assistant-avatar"><Bot /></span>
                 <div className="assistant-content">
@@ -130,7 +143,7 @@ export function ConversationPage() {
             <div className="empty-conversation"><Bot /><h2>开始一个新任务</h2><p>说出目标，Alpha 会根据任务复杂度选择合适的回答形态。</p></div>
           ) : (
             <AnimatedPanel className="turn-block">
-              <div className="user-row"><div className="user-bubble">{productFlow.prompt}</div></div>
+              <UserMessage text={productFlow.prompt} context={productFlow.context} />
               <div className="assistant-row">
                 <span className="assistant-avatar"><Bot /></span>
                 <div className="assistant-content">
@@ -158,7 +171,7 @@ export function ConversationPage() {
         </div>
       </div>
 
-      <div className="conversation-composer-wrap">
+      <div className="conversation-composer-wrap" id="conversation-composer">
         <Composer
           value={input}
           onChange={setInput}
@@ -168,9 +181,9 @@ export function ConversationPage() {
           onRemoveAttachment={() => setAttachment(undefined)}
           selectedSkill={selectedSkill}
           onSelectSkill={setSelectedSkill}
-          wikiReferences={wikiReferences}
-          availableWikiReferences={wikiPages.map(toWikiReference)}
-          onChangeWikiReferences={setWikiReferences}
+          resourceReferences={resourceReferences}
+          availableWikiResources={wikiPages.map(toWikiResource)}
+          onChangeResourceReferences={setResourceReferences}
           wikiDepositMode={wikiDepositMode}
           onChangeWikiDepositMode={setWikiDepositMode}
           onNotify={notify}

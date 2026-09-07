@@ -120,15 +120,17 @@ svg { width: 1em; height: 1em; stroke-width: 1.8; }
 .attach-button:hover, .attach-button.active { color: var(--purple); background: #efedff; }
 .attach-button svg { width: 16px; height: 16px; }
 .attach-menu { position: absolute; z-index: 30; left: 0; bottom: 42px; width: 356px; max-width: calc(100vw - 42px); padding: 8px; overflow: hidden; border: 1px solid #e2e5ed; border-radius: 15px; background: white; box-shadow: 0 20px 52px rgba(36,42,64,.17); animation: menu-rise .16s ease-out; }
+.attach-menu.open-down { top: 42px; bottom: auto; }
+.attach-menu.resource-menu { width: 520px; }
 @keyframes menu-rise { from { opacity: 0; transform: translateY(6px) scale(.985); } }
-.menu-action { width: 100%; min-height: 53px; border: 0; background: transparent; border-radius: 10px; padding: 9px 11px; display: flex; align-items: center; gap: 12px; text-align: left; }
+.menu-action { width: 100%; min-height: 58px; border: 0; background: transparent; border-radius: 10px; padding: 9px 11px; display: flex; align-items: center; gap: 12px; text-align: left; }
 .menu-action:hover { background: #f6f5fb; }
 .menu-action:disabled { opacity: .48; }
 .menu-action-icon { flex: 0 0 auto; width: 31px; height: 31px; display: grid; place-items: center; border-radius: 9px; background: #f3f1ff; color: var(--purple); }
 .menu-action-icon svg { width: 16px; height: 16px; }
 .menu-action > span:last-child { min-width: 0; display: grid; gap: 3px; }
-.menu-action strong { font-size: 13px; font-weight: 600; }
-.menu-action small { overflow: hidden; color: #929cad; font-size: 10px; line-height: 1.4; white-space: nowrap; text-overflow: ellipsis; }
+.menu-action strong { font-size: 13.5px; font-weight: 600; }
+.menu-action small { overflow: hidden; color: #929cad; font-size: 11px; line-height: 1.4; white-space: nowrap; text-overflow: ellipsis; }
 .picker-panel > header { height: 39px; display: flex; align-items: center; gap: 7px; padding: 0 3px 7px; border-bottom: 1px solid #edf0f4; }
 .picker-panel > header button { width: 28px; height: 28px; display: grid; place-items: center; border: 0; border-radius: 8px; background: transparent; color: #788396; }
 .picker-panel > header button:hover { color: var(--purple); background: #f2efff; }
@@ -149,8 +151,18 @@ svg { width: 1em; height: 1em; stroke-width: 1.8; }
 .picker-item-copy small { overflow: hidden; color: #818c9e; font-size: 9.5px; white-space: nowrap; text-overflow: ellipsis; }
 .picker-item-copy em { color: #a2a9b6; font-size: 8.5px; font-style: normal; }
 .picker-check { flex: 0 0 auto; width: 15px; color: var(--purple); }
-.wiki-action-list { padding-top: 6px; }
-.wiki-picker-list .picker-item { min-height: 54px; }
+.resource-tabs { margin: 2px 3px 6px; display: flex; gap: 3px; overflow-x: auto; border-bottom: 1px solid #edf0f4; }
+.resource-tabs button { flex: 0 0 auto; min-height: 37px; padding: 0 10px; border: 0; border-bottom: 2px solid transparent; background: transparent; color: #7e899b; font-size: 11px; }
+.resource-tabs button:hover { color: #4e5b70; }
+.resource-tabs button.active { border-bottom-color: var(--purple); color: var(--purple); font-weight: 600; }
+.resource-picker-list { max-height: var(--resource-list-height, 286px); }
+.resource-picker-list .picker-item { min-height: 58px; }
+.resource-item-icon { background: #f5f6f9; color: #657288; }
+.resource-picker-list .picker-item.selected .resource-item-icon { background: #ece8ff; color: var(--purple); }
+.resource-empty { min-height: 178px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 7px; color: #98a2b1; text-align: center; }
+.resource-empty svg { width: 24px; height: 24px; }
+.resource-empty strong { color: #58657a; font-size: 12px; }
+.resource-empty span { font-size: 10px; }
 .picker-done { width: calc(100% - 6px); height: 35px; margin: 7px 3px 2px; border: 0; border-radius: 9px; background: var(--purple); color: white; font-size: 11px; font-weight: 600; }
 .send-button { width: 39px; height: 39px; display: grid; place-items: center; border: 0; border-radius: 14px; background: #cfc7ff; color: white; transition: .18s ease; }
 .send-button:not(:disabled) { background: linear-gradient(135deg,#806aff,#6651f5); box-shadow: 0 8px 18px rgba(105,86,245,.25); }
@@ -166,7 +178,7 @@ button.context-chip { cursor: pointer; }
 .context-chip > svg:last-child { margin-left: 1px; color: #99a2b1; }
 .wiki-mode-chip { border-color: #b9d3ff; background: #edf5ff; color: #2c6fda; font-weight: 700; }
 .skill-chip { border-color: #d9d3ff; background: #f5f2ff; color: #5e4fc7; }
-.wiki-reference-chip { border-color: #dfe3eb; background: white; color: #53627a; }
+.resource-reference-chip { border-color: #dfe3eb; background: white; color: #53627a; }
 .attachment-chip { height: 40px; padding: 4px 7px; background: #f8f9fb; }
 .attachment-chip > img, .attachment-chip > svg:first-child { flex: 0 0 auto; width: 30px; height: 30px; border-radius: 6px; object-fit: cover; }
 .attachment-chip > svg:first-child { padding: 7px; background: #eeecff; color: var(--purple); }
@@ -206,7 +218,24 @@ button.context-chip { cursor: pointer; }
 .conversation-feed { width: min(1100px, calc(100% - 70px)); margin: 0 auto; padding: 34px 0 58px; }
 .turn-block { display: grid; gap: 25px; }
 .user-row { display: flex; justify-content: flex-end; }
+.user-message-stack { width: min(72%, 680px); display: flex; flex-direction: column; align-items: flex-end; gap: 8px; }
+.sent-contexts { max-width: 100%; display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 6px; }
+.sent-context-chip { min-width: 0; max-width: 320px; min-height: 29px; display: inline-flex; align-items: center; gap: 6px; padding: 5px 9px; border: 1px solid #e0e4eb; border-radius: 8px; background: #fff; color: #5c687b; box-shadow: 0 3px 10px rgba(43,50,70,.035); font-size: 10.5px; line-height: 1.4; }
+.sent-context-chip svg { flex: 0 0 auto; width: 12px; height: 12px; }
+.sent-context-chip.sent-wiki-mode { border-color: #bdd5ff; background: #edf5ff; color: #2a6fdc; font-weight: 700; }
+.sent-context-chip.sent-skill { border-color: #dcd6ff; background: #f5f2ff; color: #5e4fc7; }
+.sent-file-attachment { width: min(360px,100%); min-height: 68px; display: flex; align-items: center; gap: 11px; padding: 10px 13px; border: 1px solid #e0e4eb; border-radius: 13px; background: white; box-shadow: 0 8px 24px rgba(41,48,70,.065); }
+.sent-file-attachment > span { width: 40px; height: 40px; flex: 0 0 40px; display: grid; place-items: center; border-radius: 10px; background: #f0edff; color: var(--purple); }
+.sent-file-attachment svg { width: 18px; height: 18px; }
+.sent-file-attachment > div { min-width: 0; display: grid; gap: 4px; text-align: left; }
+.sent-file-attachment strong { overflow: hidden; color: #344056; font-size: 12px; white-space: nowrap; text-overflow: ellipsis; }
+.sent-file-attachment small { color: #929cad; font-size: 9.5px; }
+.sent-image-attachment { position: relative; width: min(300px,100%); height: 188px; margin: 0; overflow: hidden; border: 1px solid #e1e4eb; border-radius: 14px; background: #f4f5f8; box-shadow: 0 8px 24px rgba(41,48,70,.075); }
+.sent-image-attachment img { width: 100%; height: 100%; display: block; object-fit: cover; }
+.sent-image-attachment figcaption { position: absolute; inset: auto 8px 8px; min-width: 0; height: 29px; display: flex; align-items: center; gap: 6px; padding: 0 9px; overflow: hidden; border-radius: 8px; background: rgba(27,34,49,.72); color: white; font-size: 9.5px; white-space: nowrap; text-overflow: ellipsis; backdrop-filter: blur(8px); }
+.sent-image-attachment figcaption svg { flex: 0 0 auto; width: 12px; }
 .user-bubble { max-width: 72%; padding: 13px 20px; border-radius: 18px 18px 4px 18px; background: linear-gradient(135deg,#735dff,#5d4ce9); color: white; font-size: 15px; line-height: 1.5; box-shadow: 0 8px 20px rgba(100,80,245,.12); }
+.user-message-stack .user-bubble { max-width: 100%; }
 .assistant-row { display: flex; align-items: flex-start; gap: 18px; }
 .assistant-avatar { flex: 0 0 auto; width: 43px; height: 43px; display: grid; place-items: center; border-radius: 50%; background: #f0f3ff; color: var(--purple); }
 .assistant-avatar svg { width: 20px; }
@@ -357,8 +386,8 @@ button.context-chip { cursor: pointer; }
 .confirm-modal textarea:focus { border-color: #a99eff; box-shadow: 0 0 0 3px #f2efff; }
 
 /* Products */
-.products-page { padding: 36px 42px 70px; }
-.products-page > div { width: min(1180px,100%); margin: 0 auto; }
+.products-page { padding: 36px clamp(24px, 2.8vw, 64px) 70px; }
+.products-page > div { width: 100%; margin: 0; }
 .page-header { min-height: 66px; display: flex; align-items: flex-start; justify-content: space-between; gap: 20px; }
 .page-header h1 { margin: 0 0 8px; font-size: 30px; letter-spacing: -.6px; }
 .page-header p { margin: 0; color: #8d97a8; font-size: 14px; }
@@ -401,8 +430,8 @@ button.context-chip { cursor: pointer; }
 .empty-list p { margin: 0; font-size: 10.5px; }
 
 /* Asset Center / Wiki */
-.wiki-page { padding: 32px 40px 40px; }
-.wiki-center { width: min(1480px,100%); min-height: calc(100vh - 72px); margin: 0 auto; display: flex; flex-direction: column; }
+.wiki-page { padding: 32px clamp(24px, 2.8vw, 64px) 40px; }
+.wiki-center { width: 100%; min-height: calc(100vh - 72px); margin: 0; display: flex; flex-direction: column; }
 .wiki-page-header { min-height: 76px; align-items: center; }
 .wiki-header-actions { display: flex; align-items: center; gap: 8px; }
 .wiki-header-actions .secondary-button { position: relative; }
@@ -410,7 +439,7 @@ button.context-chip { cursor: pointer; }
 .identity-switch { height: 40px; padding: 3px; display: flex; border: 1px solid #e0e3eb; border-radius: 11px; background: white; }
 .identity-switch button { min-width: 78px; border: 0; border-radius: 8px; background: transparent; color: #8d96a6; font-size: 13px; }
 .identity-switch button.active { background: #efedff; color: var(--purple); font-weight: 600; }
-.wiki-workbench { flex: 1; min-height: 680px; margin-top: 20px; display: grid; grid-template-columns: 300px minmax(0,1fr); overflow: hidden; border: 1px solid #e2e5ec; border-radius: 18px; background: white; box-shadow: var(--shadow-soft); }
+.wiki-workbench { flex: 1; min-height: 680px; margin-top: 20px; display: grid; grid-template-columns: clamp(280px, 18vw, 340px) minmax(0,1fr); overflow: hidden; border: 1px solid #e2e5ec; border-radius: 18px; background: white; box-shadow: var(--shadow-soft); }
 .asset-tree { min-width: 0; padding: 20px 14px; overflow-y: auto; border-right: 1px solid #e7e9ef; background: #fafbfe; }
 .tree-title { height: 46px; display: flex; align-items: center; padding: 0 11px; color: #28364b; font-size: 16px; font-weight: 700; }
 .tree-root { margin-top: 4px; }
@@ -429,7 +458,7 @@ button.context-chip { cursor: pointer; }
 .wiki-content-pane { min-width: 0; overflow-y: auto; }
 .wiki-breadcrumb { display: flex; align-items: center; gap: 8px; color: #9aa3b2; font-size: 13px; }
 .wiki-breadcrumb svg { width: 11px; }
-.published-wiki { max-width: 980px; margin: 0 auto; padding: 40px 56px 76px; }
+.published-wiki { max-width: 1120px; margin: 0 auto; padding: 40px 56px 76px; }
 .published-wiki > header, .schema-panel > header, .raw-panel > header { min-height: 82px; display: flex; align-items: center; justify-content: space-between; gap: 20px; }
 .published-wiki > header h1, .schema-panel > header h1, .raw-panel > header h1 { margin: 0 0 8px; font-size: 30px; }
 .published-wiki > header p, .schema-panel > header p, .raw-panel > header p { margin: 0; color: #929cad; font-size: 14px; }
@@ -455,7 +484,7 @@ button.context-chip { cursor: pointer; }
 .schema-panel pre { margin: 18px 0 0; padding: 20px; overflow-x: auto; border-radius: 13px; background: #202638; color: #d7dcf2; font: 11px/1.8 ui-monospace,SFMono-Regular,Menlo,monospace; }
 .schema-note { margin-top: 13px; padding: 11px 13px; border-radius: 10px; background: #fff8e9; color: #8f6c24; font-size: 10.5px; }
 .approval-table { overflow-x: auto; border: 1px solid #e4e7ed; border-radius: 12px; }
-.raw-document-panel { max-width: 980px; margin: 0 auto; padding: 36px 48px 72px; }
+.raw-document-panel { max-width: 1120px; margin: 0 auto; padding: 36px 48px 72px; }
 .raw-document-panel > header { min-height: 96px; display: flex; align-items: center; justify-content: space-between; gap: 24px; }
 .raw-document-panel > header h1 { margin: 0 0 8px; color: #202e43; font-size: 28px; }
 .raw-document-panel > header p { margin: 0; color: #8c98aa; font-size: 14px; }
@@ -581,6 +610,38 @@ button.context-chip { cursor: pointer; }
 .version-layout > article h1 { margin: 0 0 20px; font-size: 23px; }
 .version-layout > article p { font-size: 15px; line-height: 1.85; }
 
+@media (min-width: 1600px) {
+  .sidebar { width: 240px; flex-basis: 240px; }
+  .sidebar-brand { height: 90px; padding-inline: 24px; }
+  .alpha-brand img { width: 136px; height: 34px; }
+  .sidebar-primary button { height: 48px; font-size: 15px; }
+  .sidebar-section > header { font-size: 12px; }
+  .project-list > button { height: 45px; font-size: 14.5px; }
+  .task-row { height: 39px; font-size: 13.5px; }
+  .subscription { font-size: 13px; }
+  .profile-row strong { font-size: 13px; }
+  .profile-row small { font-size: 10.5px; }
+  .primary-button, .secondary-button, .danger-button, .link-button, .icon-text-button, .text-danger-button { min-height: 42px; font-size: 14.5px; }
+  .page-header h1 { font-size: 32px; }
+  .wiki-page-header { min-height: 82px; }
+  .tree-title { font-size: 17px; }
+  .tree-root > button { height: 43px; font-size: 15px; }
+  .tree-leaf, .tree-raw, .tree-folder > button { min-height: 39px; font-size: 14px; }
+  .tree-folder > span, .tree-note { font-size: 13px; }
+  .wiki-breadcrumb { font-size: 14px; }
+  .published-wiki > header h1, .schema-panel > header h1, .raw-panel > header h1 { font-size: 32px; }
+  .published-wiki > header p, .raw-panel > header p { font-size: 15px; }
+  .wiki-article h2 { font-size: 23px; }
+  .wiki-article p, .wiki-article li { font-size: 17px; }
+  .wiki-sources > span, .wiki-sources button { font-size: 14px; }
+  .raw-document-panel > header h1 { font-size: 31px; }
+  .raw-document-panel > header p { font-size: 15px; }
+  .approval-page h1 { font-size: 30px; }
+  .approval-row { min-height: 72px; font-size: 14px; }
+  .approval-head { min-height: 47px; font-size: 12px; }
+  .approval-row > button { font-size: 14px; }
+}
+
 @media (max-width: 1050px) {
   .product-grid { grid-template-columns: 1fr; }
   .product-plan-card > p { min-height: auto; }
@@ -613,6 +674,9 @@ button.context-chip { cursor: pointer; }
   .plan-list { grid-template-columns: 1fr; }
   .execution-steps { grid-template-columns: 1fr; }
   .user-bubble { max-width: 90%; }
+  .user-message-stack { width: 90%; }
+  .user-message-stack .user-bubble { max-width: 100%; }
+  .sent-image-attachment { height: 160px; }
   .products-page, .wiki-page { padding: 20px 15px 50px; }
   .page-header { flex-direction: column; }
   .status-summary { grid-template-columns: repeat(2,1fr); }

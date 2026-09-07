@@ -18,11 +18,40 @@ export type Product = {
 
 export type ProductFlowStage = "idle" | "planning" | "running" | "result";
 
+export type MessageAttachment = {
+  id: string;
+  name: string;
+  type: string;
+  size: string;
+  source: "local" | "conversation";
+  file?: File;
+};
+
+export type MessageSkillReference = {
+  id: string;
+  name: string;
+};
+
+export type MessageResourceReference = {
+  id: string;
+  title: string;
+  kind: "wiki" | "conversation" | "team";
+  meta: string;
+  version?: number;
+};
+
+export type ProductRequestContext = {
+  attachment?: MessageAttachment;
+  skill?: MessageSkillReference;
+  resources: MessageResourceReference[];
+};
+
 export type ProductFlow = {
   stage: ProductFlowStage;
   kind: "product" | "quick" | "analysis";
   prompt: string;
   executionStep: number;
+  context?: ProductRequestContext;
 };
 
 export type WikiVersion = {
@@ -75,6 +104,8 @@ export type WikiTask = {
   rollbackCurrentContent?: string[];
   rollbackTargetContent?: string[];
   submittedAt?: string;
+  attachment?: MessageAttachment;
+  instruction?: string;
 };
 
 export type ApprovalStatus = "pending" | "approved" | "rejected";

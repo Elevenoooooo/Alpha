@@ -3,10 +3,10 @@ import { useState } from "react";
 import { Composer } from "../components/chat/Composer";
 import {
   localAttachment,
-  toWikiReference,
+  toWikiResource,
   type ComposerAttachment,
+  type ComposerResourceReference,
   type ComposerSkill,
-  type ComposerWikiReference,
 } from "../components/chat/composerModels";
 import { AnimatedPanel } from "../components/layout/AnimatedPanel";
 import { useWorkbench } from "../context/WorkbenchContext";
@@ -17,7 +17,7 @@ export function HomePage() {
   const [input, setInput] = useState("");
   const [attachment, setAttachment] = useState<ComposerAttachment>();
   const [selectedSkill, setSelectedSkill] = useState<ComposerSkill>();
-  const [wikiReferences, setWikiReferences] = useState<ComposerWikiReference[]>([]);
+  const [resourceReferences, setResourceReferences] = useState<ComposerResourceReference[]>([]);
   const [wikiDepositMode, setWikiDepositMode] = useState(false);
 
   const submit = () => {
@@ -26,17 +26,16 @@ export function HomePage() {
         notify("请添加需要沉淀的文件");
         return;
       }
-      startWikiTask(attachment.name, attachment.type);
+      startWikiTask(attachment.name, attachment.type, undefined, attachment, input.trim() || undefined);
       return;
     }
-    const context = [
-      selectedSkill ? `使用「${selectedSkill.name}」` : "",
-      wikiReferences.length ? `引用 Wiki：${wikiReferences.map((page) => `${page.title} V${page.version}`).join("、")}` : "",
-      attachment ? `附件：${attachment.name}` : "",
-    ].filter(Boolean).join("；");
-    const prompt = input.trim() || (attachment ? `请分析「${attachment.name}」` : "");
+    const prompt = input.trim() || (attachment ? "请分析这份资料" : "");
     if (!prompt) return;
-    startProductTask(context ? `${prompt}（${context}）` : prompt);
+    startProductTask(prompt, {
+      attachment,
+      skill: selectedSkill ? { id: selectedSkill.id, name: selectedSkill.name } : undefined,
+      resources: resourceReferences,
+    });
   };
 
   return (
@@ -57,9 +56,9 @@ export function HomePage() {
           onRemoveAttachment={() => setAttachment(undefined)}
           selectedSkill={selectedSkill}
           onSelectSkill={setSelectedSkill}
-          wikiReferences={wikiReferences}
-          availableWikiReferences={wikiPages.map(toWikiReference)}
-          onChangeWikiReferences={setWikiReferences}
+          resourceReferences={resourceReferences}
+          availableWikiResources={wikiPages.map(toWikiResource)}
+          onChangeResourceReferences={setResourceReferences}
           wikiDepositMode={wikiDepositMode}
           onChangeWikiDepositMode={setWikiDepositMode}
           onNotify={notify}
