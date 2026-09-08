@@ -108,11 +108,15 @@ svg { width: 1em; height: 1em; stroke-width: 1.8; }
 .composer { position: relative; width: 100%; min-height: 92px; border: 1px solid #d9dee8; border-radius: 16px; background: white; box-shadow: 0 0 0 3px rgba(76,98,126,.05), 0 12px 36px rgba(33,45,67,.06); padding: 14px 17px 55px; transition: .2s ease; }
 .composer:focus-within { border-color: #a99dff; box-shadow: 0 0 0 3px rgba(105,86,245,.09), 0 14px 38px rgba(33,45,67,.08); }
 .composer-large { min-height: 202px; border-radius: 15px; padding: 17px 19px 57px; }
-.composer textarea { width: 100%; height: 43px; min-height: 43px; resize: none; border: 0; outline: 0; color: #273348; background: transparent; font-size: 14px; line-height: 1.6; }
+.composer-input-line { width: 100%; display: flex; align-items: flex-start; gap: 7px; }
+.composer textarea { min-width: 0; flex: 1; width: 100%; height: 43px; min-height: 43px; resize: none; border: 0; outline: 0; color: #273348; background: transparent; font-size: 14px; line-height: 1.6; }
 .composer-large textarea { height: 124px; font-size: 15px; }
-.composer-contexts + textarea { margin-top: 9px; }
-.composer-large .composer-contexts + textarea { height: 82px; }
+.composer-contexts + .composer-input-line { margin-top: 9px; }
+.composer-large .composer-contexts + .composer-input-line textarea { height: 82px; }
 .composer textarea::placeholder { color: #c7cdd8; }
+.wiki-inline-mention { flex: 0 0 auto; margin-top: 1px; padding: 0; border: 0; background: transparent; color: #2774e8; font: inherit; font-size: 14px; font-weight: 650; line-height: 1.6; }
+.wiki-inline-mention:hover { color: #145bc5; text-decoration: underline; text-underline-offset: 3px; }
+.composer-large .wiki-inline-mention { font-size: 15px; }
 .composer-actions { position: absolute; left: 17px; right: 15px; bottom: 11px; display: flex; align-items: flex-end; justify-content: space-between; pointer-events: none; }
 .composer-actions > * { pointer-events: auto; }
 .attach-wrap { position: relative; }
@@ -156,6 +160,7 @@ svg { width: 1em; height: 1em; stroke-width: 1.8; }
 .resource-tabs button:hover { color: #4e5b70; }
 .resource-tabs button.active { border-bottom-color: var(--purple); color: var(--purple); font-weight: 600; }
 .resource-picker-list { max-height: var(--resource-list-height, 286px); }
+.skill-picker-list { max-height: var(--resource-list-height, 286px); }
 .resource-picker-list .picker-item { min-height: 58px; }
 .resource-item-icon { background: #f5f6f9; color: #657288; }
 .resource-picker-list .picker-item.selected .resource-item-icon { background: #ece8ff; color: var(--purple); }
@@ -176,7 +181,6 @@ button.context-chip { cursor: pointer; }
 .context-chip > span { min-width: 0; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
 .context-chip svg { flex: 0 0 auto; width: 12px; height: 12px; }
 .context-chip > svg:last-child { margin-left: 1px; color: #99a2b1; }
-.wiki-mode-chip { border-color: #b9d3ff; background: #edf5ff; color: #2c6fda; font-weight: 700; }
 .skill-chip { border-color: #d9d3ff; background: #f5f2ff; color: #5e4fc7; }
 .resource-reference-chip { border-color: #dfe3eb; background: white; color: #53627a; }
 .attachment-chip { height: 40px; padding: 4px 7px; background: #f8f9fb; }
@@ -222,8 +226,12 @@ button.context-chip { cursor: pointer; }
 .sent-contexts { max-width: 100%; display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 6px; }
 .sent-context-chip { min-width: 0; max-width: 320px; min-height: 29px; display: inline-flex; align-items: center; gap: 6px; padding: 5px 9px; border: 1px solid #e0e4eb; border-radius: 8px; background: #fff; color: #5c687b; box-shadow: 0 3px 10px rgba(43,50,70,.035); font-size: 10.5px; line-height: 1.4; }
 .sent-context-chip svg { flex: 0 0 auto; width: 12px; height: 12px; }
-.sent-context-chip.sent-wiki-mode { border-color: #bdd5ff; background: #edf5ff; color: #2a6fdc; font-weight: 700; }
 .sent-context-chip.sent-skill { border-color: #dcd6ff; background: #f5f2ff; color: #5e4fc7; }
+.sent-wiki-query { max-width: 100%; color: #38455a; font-size: 15px; line-height: 1.6; text-align: right; }
+.sent-wiki-query span { margin-right: 6px; color: #2774e8; font-weight: 650; }
+.sent-attachment-grid { max-width: 100%; display: grid; gap: 8px; justify-items: end; }
+.sent-attachment-grid.is-multiple { width: min(680px,100%); grid-template-columns: repeat(2,minmax(0,1fr)); }
+.sent-attachment-grid.is-multiple .sent-file-attachment { width: 100%; }
 .sent-file-attachment { width: min(360px,100%); min-height: 68px; display: flex; align-items: center; gap: 11px; padding: 10px 13px; border: 1px solid #e0e4eb; border-radius: 13px; background: white; box-shadow: 0 8px 24px rgba(41,48,70,.065); }
 .sent-file-attachment > span { width: 40px; height: 40px; flex: 0 0 40px; display: grid; place-items: center; border-radius: 10px; background: #f0edff; color: var(--purple); }
 .sent-file-attachment svg { width: 18px; height: 18px; }
@@ -332,6 +340,11 @@ button.context-chip { cursor: pointer; }
 .wiki-progress-block strong { color: var(--purple); }
 .wiki-progress { height: 5px; margin-top: 10px; overflow: hidden; border-radius: 3px; background: #e7e3fb; }
 .wiki-progress i { display: block; height: 100%; border-radius: 3px; background: linear-gradient(90deg,#917dff,#5e52ed); transition: width .3s ease; }
+.wiki-task-files { margin: 0 21px 13px; padding: 11px 13px; display: grid; gap: 8px; border: 1px solid #e7e9ef; border-radius: 11px; background: #fafbfc; }
+.wiki-task-files > span { color: #6c788b; font-size: 11px; font-weight: 600; }
+.wiki-task-files > div { display: flex; flex-wrap: wrap; gap: 6px; }
+.wiki-task-files small { min-width: 0; max-width: 260px; display: inline-flex; align-items: center; gap: 5px; padding: 5px 8px; overflow: hidden; border: 1px solid #e2e5eb; border-radius: 7px; background: white; color: #59667a; font-size: 9.5px; white-space: nowrap; text-overflow: ellipsis; }
+.wiki-task-files small svg { flex: 0 0 auto; width: 12px; }
 .rejection-note { margin: 12px 21px 0; padding: 12px 15px; display: grid; gap: 4px; border-radius: 11px; background: #fff2f3; color: #a74652; font-size: 13px; }
 .inline-state { display: inline-flex; align-items: center; gap: 6px; color: #647087; font-size: 13px; }
 .inline-state svg { width: 15px; color: #5273be; }
@@ -431,8 +444,42 @@ button.context-chip { cursor: pointer; }
 
 /* Asset Center / Wiki */
 .wiki-page { padding: 32px clamp(24px, 2.8vw, 64px) 40px; }
+.wiki-page.catalog-view {
+  min-height: 100%;
+  background: radial-gradient(circle at 86% 4%, rgba(111,88,255,.065), transparent 27%), #f6f7f9;
+}
 .wiki-center { width: 100%; min-height: calc(100vh - 72px); margin: 0; display: flex; flex-direction: column; }
 .wiki-page-header { min-height: 76px; align-items: center; }
+.catalog-page-header { min-height: 96px; padding: 8px 0 28px; border-bottom: 1px solid #e4e7ec; }
+.asset-header-title { display: flex; align-items: center; gap: 12px; }
+.asset-header-title h1 { margin: 0; }
+.asset-back-button { width: 38px; height: 38px; display: grid; place-items: center; border: 1px solid #e2e5eb; border-radius: 11px; background: white; color: #657187; }
+.asset-back-button:hover { border-color: #c9c3f7; background: #f7f5ff; color: var(--purple); transform: translateX(-1px); }
+.asset-back-button svg { width: 17px; }
+.wiki-catalog { margin-top: 30px; padding: clamp(26px,3vw,42px); border: 1px solid #e1e4ea; border-radius: 24px; background: rgba(255,255,255,.94); box-shadow: 0 18px 52px rgba(30,39,60,.055); }
+.wiki-catalog-heading { display: flex; align-items: flex-end; justify-content: space-between; gap: 28px; padding-bottom: 28px; border-bottom: 1px solid #eceef2; }
+.wiki-catalog-heading > div:first-child > span { display: block; margin-bottom: 7px; color: #7460e9; font-size: 12px; font-weight: 650; letter-spacing: .08em; }
+.wiki-catalog-heading h2 { margin: 0; color: #1b2639; font-size: clamp(26px,2vw,32px); line-height: 1.2; letter-spacing: -.025em; }
+.wiki-catalog-heading p { margin: 8px 0 0; color: #7b8597; font-size: 14px; line-height: 1.65; }
+.wiki-catalog-summary { display: flex; align-items: baseline; gap: 7px; flex: 0 0 auto; color: #8b94a4; font-size: 13px; }
+.wiki-catalog-summary strong { color: #222e42; font-size: 24px; line-height: 1; }
+.wiki-catalog-grid { display: grid; grid-template-columns: minmax(0,780px); gap: 18px; margin-top: 28px; }
+.wiki-catalog-card { position: relative; min-height: 238px; display: flex; flex-direction: column; padding: 28px 30px 24px; overflow: hidden; border: 1px solid #dfe3ea; border-radius: 19px; background: linear-gradient(145deg,rgba(112,89,255,.045),transparent 42%), white; color: inherit; text-align: left; cursor: pointer; box-shadow: 0 10px 26px rgba(30,39,60,.045); will-change: transform,opacity; transition: transform .18s ease,border-color .18s ease,box-shadow .18s ease; }
+.wiki-catalog-card::before { content: ""; position: absolute; inset: 0 auto 0 0; width: 3px; background: linear-gradient(180deg,#735cff,#a899ff 72%,transparent); }
+.wiki-catalog-card:hover { border-color: #cfc9f8; box-shadow: 0 18px 40px rgba(61,48,128,.105); transform: translateY(-3px); }
+.wiki-catalog-card:focus-visible { outline: 3px solid rgba(111,88,255,.22); outline-offset: 3px; }
+.wiki-card-topline { display: flex; align-items: center; gap: 10px; }
+.wiki-card-icon { width: 44px; height: 44px; display: grid; place-items: center; border: 1px solid #ded9ff; border-radius: 13px; color: #6853e8; background: #f3f0ff; }
+.wiki-card-icon svg { width: 21px; height: 21px; }
+.wiki-card-topline > svg { width: 18px; height: 18px; margin-left: auto; color: #8c96a8; transition: transform .18s ease,color .18s ease; }
+.wiki-catalog-card:hover .wiki-card-topline > svg { color: #6450df; transform: translate(2px,-2px); }
+.wiki-card-copy { margin-top: 24px; }
+.wiki-card-copy strong { display: block; color: #1d293d; font-size: 28px; line-height: 1.2; letter-spacing: -.025em; }
+.wiki-card-domains { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 22px; }
+.wiki-card-domains span { padding: 6px 10px; border: 1px solid #e6e8ee; border-radius: 999px; color: #6e788a; background: #f8f9fb; font-size: 11px; font-weight: 550; }
+.wiki-catalog-card footer { display: flex; align-items: center; gap: 22px; margin-top: auto; padding-top: 20px; border-top: 1px solid #eceef2; color: #8790a0; font-size: 12px; }
+.wiki-catalog-card footer strong { color: #334056; font-size: 14px; }
+.wiki-catalog-card footer time { margin-left: auto; }
 .wiki-header-actions { display: flex; align-items: center; gap: 8px; }
 .wiki-header-actions .secondary-button { position: relative; }
 .wiki-header-actions .secondary-button b { min-width: 16px; height: 16px; display: grid; place-items: center; border-radius: 8px; background: #ff686f; color: white; font-size: 8px; }
@@ -441,18 +488,23 @@ button.context-chip { cursor: pointer; }
 .identity-switch button.active { background: #efedff; color: var(--purple); font-weight: 600; }
 .wiki-workbench { flex: 1; min-height: 680px; margin-top: 20px; display: grid; grid-template-columns: clamp(280px, 18vw, 340px) minmax(0,1fr); overflow: hidden; border: 1px solid #e2e5ec; border-radius: 18px; background: white; box-shadow: var(--shadow-soft); }
 .asset-tree { min-width: 0; padding: 20px 14px; overflow-y: auto; border-right: 1px solid #e7e9ef; background: #fafbfe; }
-.tree-title { height: 46px; display: flex; align-items: center; padding: 0 11px; color: #28364b; font-size: 16px; font-weight: 700; }
 .tree-root { margin-top: 4px; }
 .tree-root > button { width: 100%; height: 40px; padding: 0 10px; display: flex; align-items: center; gap: 8px; border: 0; border-radius: 9px; background: transparent; color: #526075; text-align: left; font-size: 14px; }
 .tree-root > button.active { background: #efedff; color: var(--purple); }
 .tree-root > button svg { width: 11px; }
 .tree-root > div { padding-left: 19px; }
-.tree-leaf, .tree-raw, .tree-folder > button { width: 100%; min-height: 36px; margin: 3px 0; padding: 7px 11px; display: flex; align-items: center; border: 0; border-radius: 8px; background: transparent; color: #6a7688; text-align: left; font-size: 13px; line-height: 1.4; }
-.tree-leaf:hover, .tree-raw:hover, .tree-raw.active, .tree-folder > button:hover, .tree-folder > button.active { background: #f0edff; color: var(--purple); }
+.tree-raw, .tree-folder > button { width: 100%; min-height: 36px; margin: 3px 0; padding: 7px 11px; display: flex; align-items: center; gap: 8px; border: 0; border-radius: 8px; background: transparent; color: #6a7688; text-align: left; font-size: 13px; line-height: 1.4; }
+.tree-raw:hover, .tree-raw.active, .tree-folder > button:hover, .tree-folder > button.active { background: #f0edff; color: var(--purple); }
 .tree-folder { margin: 2px 0 6px; }
 .tree-folder > span { height: 33px; display: flex; align-items: center; gap: 6px; color: #7a8597; font-size: 12px; }
-.tree-folder > span svg { width: 10px; }
+.tree-folder > span svg:first-child { width: 10px; flex: 0 0 auto; }
+.tree-folder > span svg:nth-child(2) { width: 13px; height: 13px; flex: 0 0 auto; }
 .tree-folder > button { padding-left: 18px; }
+.tree-folder > button svg, .tree-raw svg { width: 13px; height: 13px; flex: 0 0 auto; color: #8d98aa; }
+.tree-folder > button span, .tree-raw span { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.raw-tree-folder { margin-top: 5px; }
+.raw-tree-folder > span svg:nth-child(2) { width: 13px; height: 13px; }
+.raw-tree-folder > button { padding-left: 25px; }
 .tree-note { margin: 22px 5px 0; padding: 12px; border-top: 1px solid #e7eaf0; color: #7d8899; font-size: 12px; line-height: 1.6; }
 .tree-root button:focus-visible, .tree-folder button:focus-visible, .tree-raw:focus-visible { outline: 2px solid #cfc8ff; outline-offset: -2px; }
 .wiki-content-pane { min-width: 0; overflow-y: auto; }
@@ -510,6 +562,28 @@ button.context-chip { cursor: pointer; }
 .upload-demo-files > span { margin-right: 2px; color: #9aa3b1; font-size: 9px; }
 .upload-demo-files button { min-height: 25px; padding: 0 8px; border: 1px solid #e3e0ff; border-radius: 7px; background: #faf9ff; color: #6d5df6; font-size: 9px; }
 .upload-demo-files button:hover { border-color: #bcb3ff; background: #f3f0ff; }
+.multi-upload-modal { width: min(650px,calc(100vw - 40px)); max-height: min(820px,calc(100vh - 42px)); overflow-y: auto; }
+.upload-selection { margin-top: 12px; overflow: hidden; border: 1px solid #e5e8ee; border-radius: 11px; }
+.upload-selection-head { min-height: 39px; display: flex; align-items: center; justify-content: space-between; padding: 0 12px; border-bottom: 1px solid #eceef2; background: #fafbfc; }
+.upload-selection-head strong { color: #47546a; font-size: 11px; }
+.upload-selection-head button { border: 0; background: transparent; color: #8994a5; font-size: 10px; }
+.upload-selection-head button:hover { color: #c14d59; }
+.upload-file-row { min-height: 54px; display: flex; align-items: center; gap: 10px; padding: 7px 10px; border-bottom: 1px solid #eef0f4; }
+.upload-file-row:last-child { border-bottom: 0; }
+.upload-file-row > span { width: 31px; height: 31px; flex: 0 0 31px; display: grid; place-items: center; border-radius: 8px; background: #f0edff; color: var(--purple); }
+.upload-file-row > span svg { width: 15px; }
+.upload-file-row > div { min-width: 0; flex: 1; display: grid; gap: 3px; }
+.upload-file-row strong { overflow: hidden; color: #344157; font-size: 11px; white-space: nowrap; text-overflow: ellipsis; }
+.upload-file-row small { color: #98a1b0; font-size: 9px; }
+.upload-file-row > button { width: 28px; height: 28px; display: grid; place-items: center; border: 0; border-radius: 7px; background: transparent; color: #9aa3b2; }
+.upload-file-row > button:hover { background: #fff0f1; color: #c9535e; }
+.upload-file-row > button svg { width: 14px; }
+.upload-instruction { margin-top: 16px; display: grid; gap: 8px; }
+.upload-instruction > span { color: #626e82; font-size: 11px; font-weight: 600; }
+.upload-instruction > div { min-height: 76px; display: flex; align-items: flex-start; gap: 7px; padding: 12px 13px; border: 1px solid #dfe3ea; border-radius: 11px; background: white; }
+.upload-instruction > div:focus-within { border-color: #aaa0ff; box-shadow: 0 0 0 3px rgba(105,86,245,.08); }
+.upload-instruction b { flex: 0 0 auto; color: #2774e8; font-size: 12px; line-height: 1.7; }
+.upload-instruction textarea { min-width: 0; flex: 1; height: 52px; padding: 0; resize: none; border: 0; outline: 0; color: #334056; font: inherit; font-size: 12px; line-height: 1.7; }
 
 /* Approvals */
 .approval-page { padding: 27px 31px 60px; }
@@ -553,6 +627,7 @@ button.context-chip { cursor: pointer; }
 .source-box { margin-top: 19px; padding: 11px; display: grid; gap: 6px; border: 1px solid #e4e7ed; border-radius: 10px; background: white; }
 .source-box small { color: #99a2b1; font-size: 11px; }
 .source-box strong { overflow: hidden; white-space: nowrap; text-overflow: ellipsis; font-size: 13px; }
+.source-file-list { min-width: 0; display: grid; gap: 4px; }
 .source-box button { display: flex; align-items: center; gap: 5px; padding: 0; border: 0; background: transparent; color: var(--purple); font-size: 12px; }
 .source-box svg { width: 11px; }
 .diff-content { min-width: 0; display: flex; flex-direction: column; background: white; }
@@ -624,9 +699,8 @@ button.context-chip { cursor: pointer; }
   .primary-button, .secondary-button, .danger-button, .link-button, .icon-text-button, .text-danger-button { min-height: 42px; font-size: 14.5px; }
   .page-header h1 { font-size: 32px; }
   .wiki-page-header { min-height: 82px; }
-  .tree-title { font-size: 17px; }
   .tree-root > button { height: 43px; font-size: 15px; }
-  .tree-leaf, .tree-raw, .tree-folder > button { min-height: 39px; font-size: 14px; }
+  .tree-raw, .tree-folder > button { min-height: 39px; font-size: 14px; }
   .tree-folder > span, .tree-note { font-size: 13px; }
   .wiki-breadcrumb { font-size: 14px; }
   .published-wiki > header h1, .schema-panel > header h1, .raw-panel > header h1 { font-size: 32px; }
@@ -649,6 +723,7 @@ button.context-chip { cursor: pointer; }
   .record-fields div:nth-child(2) { border-right: 0; }
   .record-fields div:nth-child(-n+2) { border-bottom: 1px solid #e9ebef; }
   .wiki-header-actions { flex-wrap: wrap; justify-content: flex-end; }
+  .wiki-catalog { padding: 25px; }
 }
 
 @media (max-width: 780px) {
@@ -679,6 +754,16 @@ button.context-chip { cursor: pointer; }
   .sent-image-attachment { height: 160px; }
   .products-page, .wiki-page { padding: 20px 15px 50px; }
   .page-header { flex-direction: column; }
+  .catalog-page-header { min-height: auto; padding: 4px 0 20px; }
+  .wiki-catalog { margin-top: 18px; padding: 20px; border-radius: 18px; }
+  .wiki-catalog-heading { align-items: flex-start; padding-bottom: 20px; }
+  .wiki-catalog-heading p { font-size: 13px; }
+  .wiki-catalog-summary { display: none; }
+  .wiki-catalog-grid { grid-template-columns: minmax(0,1fr); margin-top: 20px; }
+  .wiki-catalog-card { min-height: 230px; padding: 22px 22px 20px; }
+  .wiki-card-copy strong { font-size: 24px; }
+  .wiki-catalog-card footer { flex-wrap: wrap; gap: 12px 18px; }
+  .wiki-catalog-card footer time { width: 100%; margin-left: 0; }
   .status-summary { grid-template-columns: repeat(2,1fr); }
   .status-summary div:nth-child(2) { border-right: 0; }
   .status-summary div:nth-child(-n+2) { border-bottom: 1px solid #eceef3; }

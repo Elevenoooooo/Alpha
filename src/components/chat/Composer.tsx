@@ -24,6 +24,7 @@ import {
 
 type MenuPanel = "root" | "skills" | "resources";
 type ResourceTab = "wiki" | "conversation" | "team";
+type SkillScope = ComposerSkill["scope"];
 
 type ComposerProps = {
   value: string;
@@ -64,6 +65,7 @@ export function Composer({
 }: ComposerProps) {
   const [panel, setPanel] = useState<MenuPanel>();
   const [skillQuery, setSkillQuery] = useState("");
+  const [skillScope, setSkillScope] = useState<SkillScope>("extended");
   const [resourceQuery, setResourceQuery] = useState("");
   const [resourceTab, setResourceTab] = useState<ResourceTab>("wiki");
   const [menuPlacement, setMenuPlacement] = useState({ direction: "up" as "up" | "down", resourceListHeight: 286 });
@@ -73,9 +75,10 @@ export function Composer({
 
   const filteredSkills = useMemo(() => {
     const query = skillQuery.trim().toLowerCase();
-    if (!query) return demoSkills;
-    return demoSkills.filter((skill) => `${skill.name}${skill.description}${skill.owner}`.toLowerCase().includes(query));
-  }, [skillQuery]);
+    const inScope = demoSkills.filter((skill) => skill.scope === skillScope);
+    if (!query) return inScope;
+    return inScope.filter((skill) => `${skill.name}${skill.description}${skill.owner}`.toLowerCase().includes(query));
+  }, [skillQuery, skillScope]);
 
   const filteredResources = useMemo(() => {
     const allResources = [...availableWikiResources, ...demoConversationResources];
@@ -121,6 +124,18 @@ export function Composer({
   };
 
   const handleTextChange = (nextValue: string) => {
+    if (nextValue.startsWith("/")) {
+      onChange(nextValue);
+      setSkillQuery(nextValue.slice(1));
+      if (nextValue === "/") setSkillScope("extended");
+      updateMenuPlacement();
+      setPanel("skills");
+      return;
+    }
+    if (value.startsWith("/")) {
+      setSkillQuery("");
+      setPanel(undefined);
+    }
     if (/@wiki(?:\s|$)/i.test(nextValue)) {
       activateWikiDeposit();
       onChange(nextValue.replace(/@wiki\s*/i, ""));
@@ -130,6 +145,10 @@ export function Composer({
   };
 
   const handleKeyDown = (event: KeyboardEvent<HTMLTextAreaElement>) => {
+    if (panel === "skills" && value.startsWith("/") && event.key === "Enter") {
+      event.preventDefault();
+      return;
+    }
     if (event.key === "Enter" && !event.shiftKey) {
       event.preventDefault();
       submit();
@@ -139,6 +158,8 @@ export function Composer({
   const selectSkill = (skill: ComposerSkill) => {
     onChangeWikiDepositMode?.(false);
     onSelectSkill?.(skill);
+    if (value.startsWith("/")) onChange("");
+    setSkillQuery("");
     setPanel(undefined);
   };
 
@@ -151,14 +172,10 @@ export function Composer({
   };
 
   const activePlaceholder = wikiDepositMode
-    ? "请添加需要沉淀的资料，也可以补充加工要求"
+    ? "补充本次 Wiki 的加工要求"
     : placeholder;
 
-  const toggleMenu = () => {
-    if (panel) {
-      setPanel(undefined);
-      return;
-    }
+  const updateMenuPlacement = () => {
     const rect = attachButtonRef.current?.getBoundingClientRect();
     if (rect) {
       const direction = rect.top > window.innerHeight / 2 ? "up" : "down";
@@ -168,18 +185,21 @@ export function Composer({
         resourceListHeight: Math.max(112, Math.min(286, availableHeight - 168)),
       });
     }
+  };
+
+  const toggleMenu = () => {
+    if (panel) {
+      setPanel(undefined);
+      return;
+    }
+    updateMenuPlacement();
     setPanel("root");
   };
 
   return (
     <div className={`composer ${large ? "composer-large" : ""} ${wikiDepositMode ? "is-wiki-deposit" : ""}`}>
-      {(wikiDepositMode || selectedSkill || resourceReferences.length > 0 || attachment) && (
+      {(selectedSkill || resourceReferences.length > 0 || attachment) && (
         <div className="composer-contexts" aria-label="本轮已选择的上下文">
-          {wikiDepositMode && (
-            <button className="context-chip wiki-mode-chip" onClick={() => onChangeWikiDepositMode?.(false)} title="退出 Wiki 沉淀模式">
-              <span>@Wiki</span><X />
-            </button>
-          )}
           {selectedSkill && (
             <button className="context-chip skill-chip" onClick={() => onSelectSkill?.(undefined)} title="移除技能">
               <Sparkles /><span>{selectedSkill.name}</span><X />
@@ -200,13 +220,20 @@ export function Composer({
         </div>
       )}
 
-      <textarea
-        value={value}
-        onChange={(event) => handleTextChange(event.target.value)}
-        onKeyDown={handleKeyDown}
-        placeholder={activePlaceholder}
-        aria-label={activePlaceholder}
-      />
+      <div className="composer-input-line">
+        {wikiDepositMode && (
+          <button className="wiki-inline-mention" onClick={() => onChangeWikiDepositMode?.(false)} title="点击退出 Wiki 沉淀模式">
+            @Wiki
+          </button>
+        )}
+        <textarea
+          value={value}
+          onChange={(event) => handleTextChange(event.target.value)}
+          onKeyDown={handleKeyDown}
+          placeholder={activePlaceholder}
+          aria-label={activePlaceholder}
+        />
+      </div>
 
       <div className="composer-actions">
         <div className="attach-wrap" ref={menuRootRef}>
@@ -222,7 +249,7 @@ export function Composer({
 
           {panel && (
             <div
-              className={`attach-menu ${panel === "resources" ? "resource-menu" : ""} ${menuPlacement.direction === "down" ? "open-down" : ""}`}
+              className={`attach-menu ${panel === "resources" || panel === "skills" ? "resource-menu" : ""} ${menuPlacement.direction === "down" ? "open-down" : ""}`}
               style={{ "--resource-list-height": `${menuPlacement.resourceListHeight}px` } as CSSProperties}
               role="dialog"
               aria-label="添加内容"
@@ -240,7 +267,7 @@ export function Composer({
                     title="使用技能"
                     detail={wikiDepositMode ? "请先退出 @Wiki 沉淀模式" : "选择 Skill 辅助完成本轮任务"}
                     disabled={wikiDepositMode}
-                    onClick={() => setPanel("skills")}
+                    onClick={() => { setSkillScope("extended"); setPanel("skills"); }}
                   />
                   <MenuAction
                     icon={<BookOpen />}
@@ -261,7 +288,24 @@ export function Composer({
               {panel === "skills" && (
                 <PickerPanel title="使用技能" onBack={() => setPanel("root")}>
                   <SearchField value={skillQuery} onChange={setSkillQuery} placeholder="搜索技能" />
-                  <div className="picker-list">
+                  <div className="resource-tabs skill-tabs" role="tablist" aria-label="技能业务线">
+                    {([
+                      ["extended", "延保通用"],
+                      ["merchant", "商家险通用"],
+                      ["property", "财产险通用"],
+                    ] as Array<[SkillScope, string]>).map(([id, label]) => (
+                      <button
+                        key={id}
+                        className={skillScope === id ? "active" : ""}
+                        onClick={() => setSkillScope(id)}
+                        role="tab"
+                        aria-selected={skillScope === id}
+                      >
+                        {label}
+                      </button>
+                    ))}
+                  </div>
+                  <div className="picker-list skill-picker-list">
                     {filteredSkills.map((skill) => (
                       <button key={skill.id} className="picker-item" onClick={() => selectSkill(skill)}>
                         <span className="picker-item-icon"><Sparkles /></span>
@@ -273,6 +317,13 @@ export function Composer({
                         {selectedSkill?.id === skill.id && <Check className="picker-check" />}
                       </button>
                     ))}
+                    {!filteredSkills.length && (
+                      <div className="resource-empty">
+                        <Sparkles />
+                        <strong>{skillScope === "merchant" ? "商家险通用 Skill" : "财产险通用 Skill"}暂未接入</strong>
+                        <span>当前 Demo 先提供延保通用 Skill。</span>
+                      </div>
+                    )}
                   </div>
                 </PickerPanel>
               )}

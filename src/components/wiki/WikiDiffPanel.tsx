@@ -179,7 +179,10 @@ export function WikiDiffPanel({
   const pageDiff = pageDiffs[activePage] ?? pageDiffs.penetration;
   const displayLines = isRollback && task ? rollbackLines(task) : pageDiff.lines;
   const fullContent = isRollback ? task?.rollbackTargetContent ?? [] : proposedFullContent(activePage);
-  const sourceFile = task?.fileName ?? approval?.title.split(" · ")[0] ?? "本次上传文件";
+  const sourceFiles = task?.attachments?.length
+    ? task.attachments.map((item) => item.name)
+    : [task?.fileName ?? approval?.title.split(" · ")[0] ?? "本次上传文件"];
+  const sourceFile = sourceFiles[0];
   const title = affected.find((page) => page.pageId === activePage)?.title;
 
   return (
@@ -199,8 +202,8 @@ export function WikiDiffPanel({
               </button>
             ))}
             <div className="source-box">
-              <small>{isRollback ? "回滚目标" : "原始文件"}</small>
-              <strong>{sourceFile}</strong>
+              <small>{isRollback ? "回滚目标" : `原始文件 ${sourceFiles.length}`}</small>
+              <div className="source-file-list">{sourceFiles.map((file) => <strong key={file}>{file}</strong>)}</div>
               <button onClick={() => setMode(isRollback ? "full" : "source")}>{isRollback ? "查看完整历史版本" : "查看 Raw 原文"}</button>
             </div>
           </nav>

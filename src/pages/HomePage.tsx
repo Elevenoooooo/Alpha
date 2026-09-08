@@ -26,7 +26,7 @@ export function HomePage() {
         notify("请添加需要沉淀的文件");
         return;
       }
-      startWikiTask(attachment.name, attachment.type, undefined, attachment, input.trim() || undefined);
+      startWikiTask([attachment], undefined, input.trim() || undefined);
       return;
     }
     const prompt = input.trim() || (attachment ? "请分析这份资料" : "");

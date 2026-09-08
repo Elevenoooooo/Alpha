@@ -42,6 +42,7 @@ export type MessageResourceReference = {
 
 export type ProductRequestContext = {
   attachment?: MessageAttachment;
+  attachments?: MessageAttachment[];
   skill?: MessageSkillReference;
   resources: MessageResourceReference[];
 };
@@ -74,6 +75,7 @@ export type WikiPage = {
 
 export type RawFile = {
   id: string;
+  folder: string;
   name: string;
   type: string;
   size: string;
@@ -105,6 +107,7 @@ export type WikiTask = {
   rollbackTargetContent?: string[];
   submittedAt?: string;
   attachment?: MessageAttachment;
+  attachments?: MessageAttachment[];
   instruction?: string;
 };
 

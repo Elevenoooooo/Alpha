@@ -29,10 +29,13 @@ import type {
 } from "../domain/types";
 
 type StartWikiResult = "started" | "duplicate" | "blocked";
+type AssetCenterLevel = "catalog" | "extended-wiki";
 
 type WorkbenchValue = {
   view: AppView;
   setView: (view: AppView) => void;
+  assetCenterLevel: AssetCenterLevel;
+  setAssetCenterLevel: (level: AssetCenterLevel) => void;
   productFlow: ProductFlow;
   startProductTask: (prompt: string, context?: ProductRequestContext) => void;
   confirmProductPlan: () => void;
@@ -50,10 +53,8 @@ type WorkbenchValue = {
   approval?: WikiApproval;
   approvalHistory: WikiApproval[];
   startWikiTask: (
-    fileName: string,
-    fileType?: string,
+    attachments: MessageAttachment[],
     submitter?: string,
-    attachment?: MessageAttachment,
     instruction?: string,
   ) => StartWikiResult;
   pauseWikiTask: () => void;
@@ -95,6 +96,14 @@ function fileKind(name: string) {
   return "文件";
 }
 
+function rawFolder(name: string) {
+  if (/履约|类目|产品知识|设计规范/.test(name)) return "产品基础";
+  if (/经营|渗透|费率|口径/.test(name)) return "经营口径";
+  if (/询价|报价|流程/.test(name)) return "产品流程";
+  if (/风险|理赔|条款/.test(name)) return "风险研究";
+  return "待归档";
+}
+
 function approvedPageUpdate(pageId: string) {
   const updates: Record<string, string> = {
     positioning: "服务类型和履约方式必须组合校验，不能只根据险种名称推断产品形态。",
@@ -110,6 +119,7 @@ function approvedPageUpdate(pageId: string) {
 
 export function WorkbenchProvider({ children }: { children: ReactNode }) {
   const [view, setView] = useState<AppView>("home");
+  const [assetCenterLevel, setAssetCenterLevel] = useState<AssetCenterLevel>("catalog");
   const [productFlow, setProductFlow] = useState<ProductFlow>({
     stage: "idle",
     kind: "product",
@@ -227,45 +237,53 @@ export function WorkbenchProvider({ children }: { children: ReactNode }) {
 
   const startWikiTask = useCallback(
     (
-      fileName: string,
-      explicitType?: string,
+      attachments: MessageAttachment[],
       submitter = "晨雨",
-      attachment?: MessageAttachment,
       instruction?: string,
     ): StartWikiResult => {
-      const published = rawFiles.find((file) => file.name === fileName);
-      if (published) {
+      const newAttachments = attachments.filter((attachment) => !rawFiles.some((file) => file.name === attachment.name));
+      const publishedAttachments = attachments.filter((attachment) => rawFiles.some((file) => file.name === attachment.name));
+      if (!newAttachments.length && publishedAttachments.length) {
+        const published = rawFiles.find((file) => file.name === publishedAttachments[0].name)!;
         setSelectedWikiPageId(published.relatedPageIds[0] ?? initialWikiPages[0].id);
+        setAssetCenterLevel("extended-wiki");
         setView("wiki");
-        notify("该文件内容已沉淀，已为你定位到相关 Wiki Page");
+        notify(attachments.length > 1 ? "这些文件均已沉淀，已为你定位到相关 Wiki Page" : "该文件内容已沉淀，已为你定位到相关 Wiki Page");
         return "duplicate";
       }
       if (wikiTask && activeWikiStatuses.has(wikiTask.status)) {
-        if (wikiTask.fileName === fileName) {
-          notify(wikiTask.status === "submitted" ? "同一文件正在审核中" : "同一文件正在加工中");
+        const activeNames = new Set((wikiTask.attachments ?? (wikiTask.attachment ? [wikiTask.attachment] : [])).map((item) => item.name));
+        if (newAttachments.some((item) => activeNames.has(item.name))) {
+          notify(wikiTask.status === "submitted" ? "其中有文件正在审核中" : "其中有文件正在加工中");
         } else {
           notify("前方 Wiki 任务尚未审批完成，当前文件已暂缓进入加工");
         }
         return "blocked";
       }
+      const fileName = newAttachments.length === 1
+        ? newAttachments[0].name
+        : `${newAttachments[0].name} 等 ${newAttachments.length} 个文件`;
       const id = `wiki-${Date.now()}`;
       setProductFlow({ stage: "idle", kind: "product", prompt: "", executionStep: 0 });
       setWikiTask({
         id,
         kind: "deposit",
         fileName,
-        fileType: explicitType || fileKind(fileName),
+        fileType: newAttachments.length === 1 ? newAttachments[0].type || fileKind(fileName) : `${newAttachments.length} 个文件`,
         status: "processing",
         progress: 8,
         revision: 1,
         conversationId: `conversation-${id}`,
         submitter,
-        attachment,
+        attachment: newAttachments[0],
+        attachments: newAttachments,
         instruction,
       });
       setApproval(undefined);
       setView("conversation");
-      notify("Wiki 加工已开始，可在当前会话中暂停或继续");
+      notify(publishedAttachments.length
+        ? `已跳过 ${publishedAttachments.length} 个已沉淀文件，其余 ${newAttachments.length} 个文件开始加工`
+        : `${newAttachments.length} 个文件已进入延保 Wiki 加工`);
       return "started";
     },
     [notify, rawFiles, wikiTask],
@@ -302,11 +320,11 @@ export function WorkbenchProvider({ children }: { children: ReactNode }) {
     setApproval({
       id: `approval-${Date.now()}`,
       taskId: wikiTask.id,
-      title: `${wikiTask.fileName} · Wiki 变更`,
+      title: `${wikiTask.attachments && wikiTask.attachments.length > 1 ? `${wikiTask.attachments.length} 个文件` : wikiTask.fileName} · Wiki 变更`,
       submitter: wikiTask.submitter,
       submittedAt,
       status: "pending",
-      affectedPages: demoAffectedPages(wikiTask.fileName),
+      affectedPages: demoAffectedPages((wikiTask.attachments ?? []).map((item) => item.name).join(" ") || wikiTask.fileName),
     });
     notify("已提交 Wiki 审批，下一项加工将在本次审批完成后开始");
   }, [notify, wikiTask]);
@@ -347,16 +365,25 @@ export function WorkbenchProvider({ children }: { children: ReactNode }) {
         notify("回滚审批通过：已创建新版本，中间版本完整保留");
       } else {
         const affectedPageIds = approval.affectedPages.map((page) => page.pageId);
+        const sourceAttachments = wikiTask.attachments?.length
+          ? wikiTask.attachments
+          : wikiTask.attachment
+            ? [wikiTask.attachment]
+            : [{ id: wikiTask.id, name: wikiTask.fileName, type: wikiTask.fileType, size: "1.8 MB", source: "local" as const }];
+        const sourceNames = sourceAttachments.map((item) => item.name);
         setRawFiles((files) => [
           ...files,
-          {
-            id: `raw-${Date.now()}`,
-            name: wikiTask.fileName,
-            type: wikiTask.fileType,
-            size: "1.8 MB",
-            publishedAt: reviewedAt,
-            relatedPageIds: affectedPageIds,
-          },
+          ...sourceAttachments
+            .filter((item) => !files.some((file) => file.name === item.name))
+            .map((item, index) => ({
+              id: `raw-${Date.now()}-${index}`,
+              folder: rawFolder(item.name),
+              name: item.name,
+              type: item.type || fileKind(item.name),
+              size: item.size || "1.8 MB",
+              publishedAt: reviewedAt,
+              relatedPageIds: affectedPageIds,
+            })),
         ]);
         setWikiPages((pages) =>
           pages.map((page) => {
@@ -367,16 +394,16 @@ export function WorkbenchProvider({ children }: { children: ReactNode }) {
             return {
               ...page,
               currentVersion: version,
-              sources: Array.from(new Set([...page.sources, wikiTask.fileName])),
+              sources: Array.from(new Set([...page.sources, ...sourceNames])),
               versions: [
                 ...page.versions,
                 {
                   version,
                   createdAt: reviewedAt,
                   createdBy: "周然",
-                  reason: `审批通过：${wikiTask.fileName}`,
+                  reason: `审批通过：${sourceNames.join("、")}`,
                   content: extra && !current.content.includes(extra) ? [...current.content, extra] : [...current.content],
-                  sources: Array.from(new Set([...(current.sources ?? page.sources), wikiTask.fileName])),
+                  sources: Array.from(new Set([...(current.sources ?? page.sources), ...sourceNames])),
                 },
               ],
             };
@@ -453,6 +480,8 @@ export function WorkbenchProvider({ children }: { children: ReactNode }) {
     () => ({
       view,
       setView,
+      assetCenterLevel,
+      setAssetCenterLevel,
       productFlow,
       startProductTask,
       confirmProductPlan,
@@ -483,6 +512,7 @@ export function WorkbenchProvider({ children }: { children: ReactNode }) {
     [
       approval,
       approvalHistory,
+      assetCenterLevel,
       approveWiki,
       confirmProductPlan,
       flash,

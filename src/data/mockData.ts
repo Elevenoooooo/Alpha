@@ -286,6 +286,7 @@ export const initialWikiPages: WikiPage[] = [
 export const initialRawFiles: RawFile[] = [
   {
     id: "raw-knowledge",
+    folder: "产品基础",
     name: "延保险产品知识与设计规范V4.pdf",
     type: "PDF",
     size: "5.8 MB",
@@ -294,6 +295,7 @@ export const initialRawFiles: RawFile[] = [
   },
   {
     id: "raw-capability",
+    folder: "产品基础",
     name: "延保类目与履约能力盘点.xlsx",
     type: "Excel",
     size: "1.2 MB",
@@ -302,6 +304,7 @@ export const initialRawFiles: RawFile[] = [
   },
   {
     id: "raw-001",
+    folder: "经营口径",
     name: "延保经营口径V3.pdf",
     type: "PDF",
     size: "2.4 MB",
@@ -310,6 +313,7 @@ export const initialRawFiles: RawFile[] = [
   },
   {
     id: "raw-002",
+    folder: "产品流程",
     name: "产品询报价流程说明.docx",
     type: "Word",
     size: "846 KB",
@@ -318,6 +322,7 @@ export const initialRawFiles: RawFile[] = [
   },
   {
     id: "raw-risk",
+    folder: "风险研究",
     name: "延保品类风险研究摘要.docx",
     type: "Word",
     size: "968 KB",

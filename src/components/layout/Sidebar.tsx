@@ -14,7 +14,7 @@ import { Brand } from "./Brand";
 const projects = ["新项目 1", "新项目 2", "新项目 3", "新项目 4"];
 
 export function Sidebar() {
-  const { view, setView, resetConversation, productFlow, wikiTask } = useWorkbench();
+  const { view, setView, resetConversation, productFlow, wikiTask, setAssetCenterLevel } = useWorkbench();
   const currentTask = productFlow.prompt || "昨天手机类目保费最大的10个品牌...";
 
   return (
@@ -32,7 +32,7 @@ export function Sidebar() {
           <PackageCheck />
           <span>我的产品</span>
         </button>
-        <button className={view === "wiki" ? "active" : ""} onClick={() => setView("wiki")}>
+        <button className={view === "wiki" ? "active" : ""} onClick={() => { setAssetCenterLevel("catalog"); setView("wiki"); }}>
           <Archive />
           <span>资产中心</span>
           {wikiTask?.status === "submitted" && <i className="nav-dot" />}

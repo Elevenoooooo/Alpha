@@ -21,7 +21,8 @@ export function WikiProcessingCard({
   const submitted = task.status === "submitted";
   const rejected = task.status === "rejected";
   const approved = task.status === "approved";
-  const affectedPageCount = demoAffectedPages(task.fileName).length;
+  const sourceAttachments = task.attachments?.length ? task.attachments : task.attachment ? [task.attachment] : [];
+  const affectedPageCount = demoAffectedPages(sourceAttachments.map((item) => item.name).join(" ") || task.fileName).length;
 
   return (
     <article className="wiki-result-card answer-card">
@@ -40,6 +41,13 @@ export function WikiProcessingCard({
           {approved && "已发布"}
         </span>
       </header>
+
+      {sourceAttachments.length > 1 && (
+        <div className="wiki-task-files">
+          <span>本次共 {sourceAttachments.length} 个原始文件</span>
+          <div>{sourceAttachments.map((file) => <small key={file.id}><FileText />{file.name}</small>)}</div>
+        </div>
+      )}
 
       {(task.status === "processing" || task.status === "paused") && (
         <div className="wiki-progress-block">

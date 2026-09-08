@@ -7,17 +7,23 @@ type UserMessageProps = {
   context?: ProductRequestContext;
   wikiMode?: boolean;
   attachment?: MessageAttachment;
+  attachments?: MessageAttachment[];
 };
 
-export function UserMessage({ text, context, wikiMode = false, attachment }: UserMessageProps) {
-  const activeAttachment = attachment ?? context?.attachment;
+export function UserMessage({ text, context, wikiMode = false, attachment, attachments }: UserMessageProps) {
+  const activeAttachments = attachments?.length
+    ? attachments
+    : context?.attachments?.length
+      ? context.attachments
+      : attachment ?? context?.attachment
+        ? [attachment ?? context?.attachment!]
+        : [];
 
   return (
     <div className="user-row">
       <div className="user-message-stack">
-        {(wikiMode || context?.skill || Boolean(context?.resources.length)) && (
+        {(context?.skill || Boolean(context?.resources.length)) && (
           <div className="sent-contexts" aria-label="本轮使用的上下文">
-            {wikiMode && <span className="sent-context-chip sent-wiki-mode">@Wiki</span>}
             {context?.skill && (
               <span className="sent-context-chip sent-skill"><Sparkles />{context.skill.name}</span>
             )}
@@ -29,8 +35,14 @@ export function UserMessage({ text, context, wikiMode = false, attachment }: Use
             ))}
           </div>
         )}
-        {activeAttachment && <SentAttachment attachment={activeAttachment} />}
-        {text && <div className="user-bubble">{text}</div>}
+        {activeAttachments.length > 0 && (
+          <div className={`sent-attachment-grid ${activeAttachments.length > 1 ? "is-multiple" : ""}`}>
+            {activeAttachments.map((item) => <SentAttachment attachment={item} key={item.id} />)}
+          </div>
+        )}
+        {text && (wikiMode
+          ? <div className="sent-wiki-query"><span>@Wiki</span>{text}</div>
+          : <div className="user-bubble">{text}</div>)}
       </div>
     </div>
   );

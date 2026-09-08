@@ -1,12 +1,16 @@
 import {
+  ArrowUpRight,
   ArrowLeft,
   Bell,
+  BookOpenText,
   CheckCircle2,
   ChevronDown,
   ChevronRight,
   Clock3,
   FileArchive,
   FileDiff,
+  FileText,
+  Folder,
   History,
   RotateCcw,
   ShieldCheck,
@@ -14,13 +18,16 @@ import {
   X,
   XCircle,
 } from "lucide-react";
-import { useMemo, useRef, useState } from "react";
+import { gsap } from "gsap";
+import { useGSAP } from "@gsap/react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { localAttachment } from "../components/chat/composerModels";
 import { AnimatedPanel } from "../components/layout/AnimatedPanel";
 import { WikiDiffPanel } from "../components/wiki/WikiDiffPanel";
 import { useWorkbench } from "../context/WorkbenchContext";
-import type { ApprovalStatus, RawFile, WikiApproval, WikiPage as WikiPageType } from "../domain/types";
+import type { ApprovalStatus, MessageAttachment, RawFile, WikiApproval, WikiPage as WikiPageType } from "../domain/types";
 
-type AssetSection = "schema" | "wiki" | "raw";
+type AssetSection = "wiki" | "raw";
 type CenterPanel = "library" | "mine" | "review";
 
 const historicalApprovals: WikiApproval[] = [
@@ -66,6 +73,8 @@ export function WikiPage() {
   const {
     wikiPages,
     rawFiles,
+    assetCenterLevel: assetLevel,
+    setAssetCenterLevel: setAssetLevel,
     selectedWikiPageId,
     setSelectedWikiPageId,
     startWikiTask,
@@ -82,7 +91,8 @@ export function WikiPage() {
   const [panel, setPanel] = useState<CenterPanel>("library");
   const [identity, setIdentity] = useState<"user" | "reviewer">("user");
   const [uploadOpen, setUploadOpen] = useState(false);
-  const [uploadFile, setUploadFile] = useState<{ name: string }>();
+  const [uploadFiles, setUploadFiles] = useState<MessageAttachment[]>([]);
+  const [uploadInstruction, setUploadInstruction] = useState("请按主题提取可复用知识，并更新对应的 Wiki Pages");
   const [historyPage, setHistoryPage] = useState<WikiPageType>();
   const [detailApproval, setDetailApproval] = useState<WikiApproval>();
   const [mineFilter, setMineFilter] = useState<"全部" | "审核中" | "审核通过" | "审核失败">("全部");
@@ -100,8 +110,17 @@ export function WikiPage() {
     return [...unique.values()];
   }, [approval, approvalHistory]);
   const selectedRawFile = rawFiles.find((file) => file.id === selectedRawFileId) ?? rawFiles[0];
+  const rawFolders = useMemo(() => {
+    const folders = new Map<string, RawFile[]>();
+    rawFiles.forEach((file) => folders.set(file.folder, [...(folders.get(file.folder) ?? []), file]));
+    return [...folders.entries()];
+  }, [rawFiles]);
   const minePendingCount = approvals.filter((item) => item.submitter === actorName && item.status === "pending").length;
   const reviewPendingCount = approvals.filter((item) => item.submitter !== actorName && item.status === "pending").length;
+
+  useEffect(() => {
+    if (assetLevel === "catalog") setPanel("library");
+  }, [assetLevel]);
 
   const openPage = (id: string) => {
     setSelectedWikiPageId(id);
@@ -121,49 +140,70 @@ export function WikiPage() {
     if (raw) openRaw(raw.id);
   };
 
-  const uploadAndStart = () => {
-    if (!uploadFile) return;
-    const result = startWikiTask(uploadFile.name, undefined, actorName);
+  const addUploadFiles = (files: MessageAttachment[]) => {
+    setUploadFiles((current) => {
+      const unique = new Map(current.map((file) => [file.name, file]));
+      files.forEach((file) => unique.set(file.name, file));
+      return [...unique.values()];
+    });
+  };
+
+  const closeUpload = () => {
     setUploadOpen(false);
-    setUploadFile(undefined);
+    setUploadFiles([]);
+    setUploadInstruction("请按主题提取可复用知识，并更新对应的 Wiki Pages");
+  };
+
+  const uploadAndStart = () => {
+    if (!uploadFiles.length) return;
+    const result = startWikiTask(uploadFiles, actorName, uploadInstruction.trim() || undefined);
+    if (result === "blocked") return;
+    closeUpload();
     if (result === "started") setView("conversation");
   };
 
   return (
-    <div className="wiki-page page-surface" ref={pageSurfaceRef}>
+    <div className={`wiki-page page-surface ${assetLevel === "catalog" ? "catalog-view" : "detail-view"}`} ref={pageSurfaceRef}>
       <AnimatedPanel className="wiki-center">
-        {panel === "library" && <header className="page-header wiki-page-header">
-          <div><h1>资产中心</h1></div>
-          <div className="wiki-header-actions">
+        {panel === "library" && <header className={`page-header wiki-page-header ${assetLevel === "extended-wiki" ? "wiki-detail-header" : "catalog-page-header"}`}>
+          <div className="asset-header-title">
+            {assetLevel === "extended-wiki" && <button className="asset-back-button" onClick={() => setAssetLevel("catalog")} aria-label="返回资产中心" title="返回资产中心"><ArrowLeft /></button>}
+            <h1>{assetLevel === "catalog" ? "资产中心" : "延保 Wiki"}</h1>
+          </div>
+          {assetLevel === "extended-wiki" && <div className="wiki-header-actions">
             <div className="identity-switch"><button className={identity === "user" ? "active" : ""} onClick={() => { setIdentity("user"); setPanel("library"); }}>普通用户</button><button className={identity === "reviewer" ? "active" : ""} onClick={() => { setIdentity("reviewer"); setPanel("library"); }}>审核员</button></div>
             <button className="secondary-button" onClick={() => setPanel("mine")}><FileDiff />我的提交{minePendingCount > 0 && <b>{minePendingCount}</b>}</button>
             {identity === "reviewer" && <button className="secondary-button" onClick={() => setPanel("review")}><Bell />待我审核{reviewPendingCount > 0 && <b>{reviewPendingCount}</b>}</button>}
             <button className="primary-button" onClick={() => setUploadOpen(true)}><Upload />上传文件</button>
-          </div>
+          </div>}
         </header>}
 
         {panel === "library" ? (
-          <div className="wiki-workbench">
+          assetLevel === "catalog" ? (
+            <WikiCatalog pageCount={wikiPages.length} rawCount={rawFiles.length} onOpen={() => setAssetLevel("extended-wiki")} />
+          ) : <div className="wiki-workbench">
             <aside className="asset-tree">
-              <div className="tree-title">业务 Wiki</div>
-              <TreeRoot title="Schema" active={section === "schema"} onClick={() => setSection("schema")}>
-                <TreeLeaf title="business-wiki-schema.yaml" />
-                <TreeLeaf title="page-template.md" />
-              </TreeRoot>
               <TreeRoot title="Wiki" active={section === "wiki"} onClick={() => setSection("wiki")}>
                 {["产品知识", "产品规则", "经营口径", "风险知识", "产品流程"].map((folder) => (
-                  <div className="tree-folder" key={folder}><span><ChevronDown />{folder}</span>{wikiPages.filter((page) => page.folder === folder).map((page) => <button className={page.id === selectedWikiPageId ? "active" : ""} onClick={() => openPage(page.id)} key={page.id}>{page.title}</button>)}</div>
+                  <div className="tree-folder" key={folder}>
+                    <span><ChevronDown /><Folder />{folder}</span>
+                    {wikiPages.filter((page) => page.folder === folder).map((page) => <button className={page.id === selectedWikiPageId ? "active" : ""} onClick={() => openPage(page.id)} key={page.id}><FileText /><span>{page.title}</span></button>)}
+                  </div>
                 ))}
               </TreeRoot>
               <TreeRoot title="Raw" active={section === "raw"} onClick={() => openRaw(selectedRawFileId || initialRawId(rawFiles))}>
-                {rawFiles.map((file) => <button className={`tree-raw ${section === "raw" && file.id === selectedRawFile?.id ? "active" : ""}`} key={file.id} onClick={() => openRaw(file.id)}>{file.name}</button>)}
+                {rawFolders.map(([folder, files]) => (
+                  <div className="tree-folder raw-tree-folder" key={folder}>
+                    <span><ChevronDown /><Folder />{folder}</span>
+                    {files.map((file) => <button className={`tree-raw ${section === "raw" && file.id === selectedRawFile?.id ? "active" : ""}`} key={file.id} onClick={() => openRaw(file.id)}><FileText /><span>{file.name}</span></button>)}
+                  </div>
+                ))}
               </TreeRoot>
               <div className="tree-note">只有审批通过的 Wiki 和 Raw 才会出现在这里并进入检索。</div>
             </aside>
 
             <section className="wiki-content-pane">
               {section === "wiki" && <PublishedWikiPage page={selectedPage} onHistory={() => setHistoryPage(selectedPage)} onOpenRaw={openRawByName} />}
-              {section === "schema" && <SchemaPanel />}
               {section === "raw" && <RawPanel file={selectedRawFile} />}
             </section>
           </div>
@@ -191,23 +231,24 @@ export function WikiPage() {
       </AnimatedPanel>
 
       {uploadOpen && (
-        <div className="modal-backdrop" onMouseDown={(event) => event.target === event.currentTarget && setUploadOpen(false)}>
-          <section className="upload-modal">
-            <header><div><h2>上传文件</h2></div><button onClick={() => setUploadOpen(false)}><X /></button></header>
-            <button className={`upload-dropzone ${uploadFile ? "has-file" : ""}`} onClick={() => inputRef.current?.click()}>
-              {uploadFile ? <><FileArchive /><strong>{uploadFile.name}</strong><span>点击可重新选择</span></> : <><Upload /><strong>选择需要沉淀的业务资料</strong><span>支持 PDF、Word、PPT、Excel、Markdown 和图片</span></>}
+        <div className="modal-backdrop" onMouseDown={(event) => event.target === event.currentTarget && closeUpload()}>
+          <section className="upload-modal multi-upload-modal">
+            <header><div><h2>上传文件</h2></div><button onClick={closeUpload}><X /></button></header>
+            <button className={`upload-dropzone ${uploadFiles.length ? "has-file" : ""}`} onClick={() => inputRef.current?.click()}>
+              <><Upload /><strong>{uploadFiles.length ? "继续添加文件" : "选择需要沉淀的业务资料"}</strong><span>支持 PDF、Word、PPT、Excel、Markdown 和图片，可多选</span></>
             </button>
-            <input ref={inputRef} hidden type="file" accept=".pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx,.md,.png,.jpg,.jpeg,.webp" onChange={(event) => {
-              const file = event.target.files?.[0];
-              setUploadFile(file ? { name: file.name } : undefined);
+            <input ref={inputRef} hidden multiple type="file" accept=".pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx,.md,.png,.jpg,.jpeg,.webp" onChange={(event) => {
+              addUploadFiles([...event.target.files ?? []].map(localAttachment));
+              event.currentTarget.value = "";
             }} />
+            {uploadFiles.length > 0 && <div className="upload-selection"><div className="upload-selection-head"><strong>已选择 {uploadFiles.length} 个文件</strong><button onClick={() => setUploadFiles([])}>清空</button></div>{uploadFiles.map((file) => <div className="upload-file-row" key={file.id}><span><FileText /></span><div><strong>{file.name}</strong><small>{file.type} · {file.size}</small></div><button onClick={() => setUploadFiles((items) => items.filter((item) => item.id !== file.id))} aria-label={`移除 ${file.name}`}><X /></button></div>)}</div>}
             <div className="upload-demo-files">
               <span>演示文件</span>
-              <button onClick={() => setUploadFile({ name: "延保险产品知识与设计规范V4-补充版.pdf" })}>新资料：延保险产品知识与设计规范V4-补充版.pdf</button>
-              <button onClick={() => setUploadFile({ name: "商家险理赔口径补充.docx" })}>第二轮资料：商家险理赔口径补充.docx</button>
-              <button onClick={() => setUploadFile({ name: "延保经营口径V3.pdf" })}>重复资料：延保经营口径V3.pdf</button>
+              <button onClick={() => addUploadFiles(demoUploadFiles)}>添加 3 个新文件</button>
+              <button onClick={() => addUploadFiles([demoAttachment("延保经营口径V3.pdf", "PDF", "2.4 MB")])}>添加重复资料</button>
             </div>
-            <footer><button className="secondary-button" onClick={() => setUploadOpen(false)}>取消</button><button className="primary-button" disabled={!uploadFile} onClick={uploadAndStart}>去加工</button></footer>
+            <label className="upload-instruction"><span>沉淀要求</span><div><b>@Wiki</b><textarea value={uploadInstruction} onChange={(event) => setUploadInstruction(event.target.value)} placeholder="描述希望如何加工这些资料" /></div></label>
+            <footer><button className="secondary-button" onClick={closeUpload}>取消</button><button className="primary-button" disabled={!uploadFiles.length} onClick={uploadAndStart}>去加工</button></footer>
           </section>
         </div>
       )}
@@ -240,19 +281,72 @@ export function WikiPage() {
   );
 }
 
-function TreeRoot({ title, active, onClick, children }: { title: string; active: boolean; onClick: () => void; children: React.ReactNode }) {
-  return <div className="tree-root"><button className={active ? "active" : ""} onClick={onClick}><ChevronDown /><strong>{title}</strong></button><div>{children}</div></div>;
+function WikiCatalog({ pageCount, rawCount, onOpen }: { pageCount: number; rawCount: number; onOpen: () => void }) {
+  const scope = useRef<HTMLElement>(null);
+
+  useGSAP(() => {
+    const media = gsap.matchMedia();
+    media.add({ reduceMotion: "(prefers-reduced-motion: reduce)" }, (context) => {
+      const targets = [".wiki-catalog-heading", ".wiki-catalog-card"];
+      if (context.conditions?.reduceMotion) {
+        gsap.set(targets, { autoAlpha: 1, y: 0 });
+        return;
+      }
+      gsap.fromTo(
+        targets,
+        { autoAlpha: 0, y: 14 },
+        { autoAlpha: 1, y: 0, duration: 0.44, stagger: 0.08, ease: "power2.out", clearProps: "transform,opacity,visibility" },
+      );
+    }, scope.current ?? undefined);
+    return () => media.revert();
+  }, { scope });
+
+  return (
+    <section className="wiki-catalog" ref={scope}>
+      <header className="wiki-catalog-heading">
+        <div>
+          <span>业务知识资产</span>
+          <h2>Wiki</h2>
+          <p>按业务线管理已经审批发布的知识与原始依据。</p>
+        </div>
+        <div className="wiki-catalog-summary"><strong>1</strong><span>个知识库</span></div>
+      </header>
+      <div className="wiki-catalog-grid">
+        <button className="wiki-catalog-card" onClick={onOpen}>
+          <div className="wiki-card-topline">
+            <span className="wiki-card-icon"><BookOpenText /></span>
+            <ArrowUpRight />
+          </div>
+          <div className="wiki-card-copy">
+            <strong>延保 Wiki</strong>
+          </div>
+          <div className="wiki-card-domains"><span>产品知识</span><span>产品规则</span><span>经营口径</span><span>风险知识</span><span>产品流程</span></div>
+          <footer><span><strong>{pageCount}</strong> Pages</span><span><strong>{rawCount}</strong> Raw</span><time>更新于 2026-09-03</time></footer>
+        </button>
+      </div>
+    </section>
+  );
 }
 
-function TreeLeaf({ title }: { title: string }) {
-  return <button className="tree-leaf">{title}</button>;
+function demoAttachment(name: string, type: string, size: string): MessageAttachment {
+  return { id: `demo-${name}`, name, type, size, source: "local" };
+}
+
+const demoUploadFiles: MessageAttachment[] = [
+  demoAttachment("延保险产品知识与设计规范V4-补充版.pdf", "PDF", "3.6 MB"),
+  demoAttachment("延保类目履约能力更新.xlsx", "Excel", "1.1 MB"),
+  demoAttachment("延保核保约束补充说明.docx", "Word", "728 KB"),
+];
+
+function TreeRoot({ title, active, onClick, children }: { title: string; active: boolean; onClick: () => void; children: React.ReactNode }) {
+  return <div className="tree-root"><button className={active ? "active" : ""} onClick={onClick}><ChevronDown /><strong>{title}</strong></button><div>{children}</div></div>;
 }
 
 function PublishedWikiPage({ page, onHistory, onOpenRaw }: { page: WikiPageType; onHistory: () => void; onOpenRaw: (name: string) => void }) {
   const current = page.versions.find((version) => version.version === page.currentVersion) ?? page.versions.at(-1)!;
   return (
     <article className="published-wiki">
-      <div className="wiki-breadcrumb">业务 Wiki <ChevronRight /> Wiki <ChevronRight /> {page.folder}</div>
+      <div className="wiki-breadcrumb">延保 Wiki <ChevronRight /> Wiki <ChevronRight /> {page.folder}</div>
       <header><div><h1>{page.title}</h1><p>当前生效版本 V{page.currentVersion} · {current.createdAt} · {current.createdBy}</p></div><button className="secondary-button" onClick={onHistory}><History />历史版本</button></header>
       <section className="wiki-article">
         {current.content.map((line, index) => <WikiArticleLine line={line} key={`${line}-${index}`} />)}
@@ -270,15 +364,11 @@ function WikiArticleLine({ line }: { line: string }) {
   return <p>{line}</p>;
 }
 
-function SchemaPanel() {
-  return <article className="schema-panel"><div className="wiki-breadcrumb">业务 Wiki <ChevronRight /> Schema</div><header><div><h1>Wiki Schema</h1></div><span className="immutable-tag"><ShieldCheck />仅管理员维护</span></header><pre>{`page:\n  title: string\n  folder: string\n  version: integer\n  status: published | pending | rejected\n  sources:\n    - raw_id\n    - locator\n  content: rich_text\n  approved_by: user_id\n  approved_at: datetime`}</pre><div className="schema-note">每个加工任务绑定具体 Schema 版本，避免审批期间规则变化导致前后结果不一致。</div></article>;
-}
-
 function RawPanel({ file }: { file?: RawFile }) {
   if (!file) return <div className="raw-document-empty"><FileArchive /><h2>暂无 Raw 文件</h2></div>;
   const pages = rawDocumentPages(file.name, file.type);
   return <article className="raw-document-panel">
-    <div className="wiki-breadcrumb">业务 Wiki <ChevronRight /> Raw <ChevronRight /> {file.name}</div>
+    <div className="wiki-breadcrumb">延保 Wiki <ChevronRight /> Raw <ChevronRight /> {file.folder} <ChevronRight /> {file.name}</div>
     <header>
       <div><h1>{file.name}</h1><p>{file.type} · {file.size} · {file.publishedAt} 入库</p></div>
       <span className="immutable-tag"><ShieldCheck />只读原始资料</span>

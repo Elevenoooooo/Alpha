@@ -56,7 +56,7 @@ export function ConversationPage() {
         notify("请添加需要沉淀的文件");
         return;
       }
-      const result = startWikiTask(attachment.name, attachment.type, undefined, attachment, input.trim() || undefined);
+      const result = startWikiTask([attachment], undefined, input.trim() || undefined);
       if (result === "blocked") return;
       setInput("");
       setAttachment(undefined);
@@ -104,7 +104,7 @@ export function ConversationPage() {
     <div className="conversation-page">
       <header className="conversation-topbar">
         <button onClick={() => setView("home")}><ArrowLeft /></button>
-        <div><strong>{isWikiConversation ? "业务 Wiki 加工" : "手机类目延保产品设计"}</strong></div>
+        <div><strong>{isWikiConversation ? "延保 Wiki 加工" : "手机类目延保产品设计"}</strong></div>
         {isWikiConversation && wikiTask?.status === "submitted" && <span className="queue-lock">全局 Wiki 队列已锁定至审批完成</span>}
       </header>
 
@@ -114,19 +114,19 @@ export function ConversationPage() {
             <AnimatedPanel className="turn-block">
               <UserMessage
                 wikiMode
-                text={wikiTask.instruction || "请按业务 Wiki Schema 提取可复用知识"}
-                attachment={wikiTask.attachment ?? {
-                  id: `wiki-message-${wikiTask.id}`,
-                  name: wikiTask.fileName,
-                  type: wikiTask.fileType,
-                  size: "",
-                  source: "local",
-                }}
+                text={wikiTask.instruction || "请按延保 Wiki Schema 提取可复用知识"}
+                attachments={wikiTask.attachments?.length ? wikiTask.attachments : [wikiTask.attachment ?? {
+                    id: `wiki-message-${wikiTask.id}`,
+                    name: wikiTask.fileName,
+                    type: wikiTask.fileType,
+                    size: "",
+                    source: "local",
+                  }]}
               />
               <div className="assistant-row">
                 <span className="assistant-avatar"><Bot /></span>
                 <div className="assistant-content">
-                  <div className="thinking-label"><Sparkles />已读取本次上传文件，正在按业务 Wiki Schema 加工</div>
+                  <div className="thinking-label"><Sparkles />已读取本次上传文件，正在按延保 Wiki Schema 加工</div>
                   <WikiProcessingCard
                     task={wikiTask}
                     onPause={pauseWikiTask}
@@ -235,7 +235,7 @@ function DocumentDetail({ onClose }: { onClose: () => void }) {
           <ul><li>手机主品月 GMV 4.67 亿，延保渗透率为 2.1%。</li><li>碎屏与核心部件故障是主要可保风险。</li><li>高价机型适合更长保障周期，中低价机型更适合低门槛引流。</li></ul>
           <h2>建议动作</h2>
           <p>优先使用通过初步核保的两套方案进入询报价；第三套补充责任边界后再提交。</p>
-          <div className="doc-source"><FileText />依据：手机类目经营日报、故障标签库、业务 Wiki（均为 Demo 数据）</div>
+          <div className="doc-source"><FileText />依据：手机类目经营日报、故障标签库、延保 Wiki（均为 Demo 数据）</div>
         </article>
       </aside>
     </div>
