@@ -95,16 +95,85 @@ svg { width: 1em; height: 1em; stroke-width: 1.8; }
 @keyframes spin { to { transform: rotate(360deg); } }
 
 /* Home */
-.home-page { position: relative; width: 100%; height: 100%; overflow-y: auto; background: radial-gradient(circle at 55% 14%,#fff 0,#fbfcff 44%,#fafbff 100%); }
-.home-content { width: min(980px, calc(100% - 72px)); min-height: 100%; margin: 0 auto; padding: clamp(88px, 11vh, 128px) 0 70px; display: flex; flex-direction: column; }
-.hero-heading { height: 70px; display: flex; align-items: center; justify-content: center; margin-bottom: 21px; }
-.hero-heading h1 { margin: 0; font-size: clamp(35px, 3.25vw, 52px); line-height: 1; font-weight: 700; letter-spacing: -2px; color: #172337; }
-.hero-alpha { position: relative; margin-right: 14px; font-size: clamp(31px, 2.8vw, 46px); font-weight: 700; color: rgba(56,65,86,.17); filter: blur(4px); letter-spacing: -2px; }
-.hero-heading::before, .hero-heading::after { content: ""; width: 14px; height: 14px; position: relative; border-top: 2px solid #765eff; top: -20px; }
-.hero-heading::before { order: 1; border-left: 2px solid #765eff; margin-right: -16px; }
-.hero-alpha { order: 2; }
-.hero-heading h1 { order: 3; }
-.hero-heading::after { order: 4; border-right: 2px solid #765eff; margin-left: 9px; }
+.home-page { position: relative; isolation: isolate; width: 100%; height: 100%; overflow-y: auto; background: #fbfcff; }
+.home-page::before { content: ""; position: absolute; z-index: -1; inset: 0 0 auto; height: 600px; pointer-events: none; background: radial-gradient(circle at 50% -20%,rgba(112,91,255,.12),transparent 55%), radial-gradient(circle at 12% 18%,rgba(105,86,245,.045),transparent 31%), radial-gradient(circle at 89% 30%,rgba(88,112,255,.045),transparent 28%); }
+.home-content { width: min(1220px, calc(100% - 64px)); min-height: 100%; margin: 0 auto; padding: 30px 0 58px; }
+.home-toolbar { min-height: 34px; display: flex; align-items: center; justify-content: space-between; }
+.home-presence { display: flex; align-items: center; gap: 8px; color: #69758a; font-size: 12px; font-weight: 600; }
+.home-presence > span { width: 7px; height: 7px; border-radius: 50%; background: #36b37e; box-shadow: 0 0 0 4px rgba(54,179,126,.1); }
+.home-toolbar > button { min-height: 34px; display: flex; align-items: center; gap: 7px; padding: 0 12px; border: 1px solid #e2e5ee; border-radius: 10px; background: rgba(255,255,255,.72); color: #657188; font-size: 11.5px; box-shadow: 0 6px 20px rgba(44,52,78,.04); transition: .18s ease; }
+.home-toolbar > button:hover { border-color: #cfc8ff; color: var(--purple); background: #fff; transform: translateY(-1px); }
+.home-toolbar > button svg { width: 12px; fill: currentColor; }
+.home-hero { padding: clamp(36px,5.6vh,64px) 0 30px; text-align: center; }
+.home-eyebrow { display: inline-flex; align-items: center; gap: 7px; color: #6f62c3; font-size: 11.5px; font-weight: 600; letter-spacing: .02em; }
+.home-eyebrow svg { width: 13px; height: 13px; }
+.home-hero h1 { margin: 13px 0 13px; color: #18243a; font-size: clamp(38px,3.2vw,52px); line-height: 1.15; font-weight: 750; letter-spacing: -2.1px; }
+.home-hero p { margin: 0; color: #7f8a9c; font-size: 14px; line-height: 1.7; }
+.journey-grid { margin-top: 14px; padding: 9px; display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 0; border: 1px solid #e3e6ee; border-radius: 20px; background: rgba(255,255,255,.78); box-shadow: 0 14px 36px rgba(45,53,83,.045); }
+.journey-card { position: relative; min-width: 0; padding: 16px 17px 17px; border: 0; border-radius: 14px; background: transparent; transition: background .18s ease, box-shadow .18s ease; }
+.journey-card + .journey-card { border-left: 1px solid #eaecf2; border-radius: 0 14px 14px 0; }
+.journey-card:hover, .journey-card.active { background: rgba(248,248,255,.88); box-shadow: inset 0 0 0 1px rgba(113,92,239,.08); }
+.journey-card > header { min-height: 42px; display: flex; align-items: center; gap: 11px; }
+.journey-icon { flex: 0 0 auto; width: 36px; height: 36px; display: grid; place-items: center; border: 1px solid #e0dcfb; border-radius: 11px; background: #f5f3ff; color: var(--purple); }
+.journey-analysis .journey-icon { border-color: #dfe4f7; background: #f3f6ff; color: #5268d2; }
+.journey-icon svg { width: 16px; height: 16px; }
+.journey-card > header > div { min-width: 0; flex: 1; }
+.journey-card > header small { display: block; margin: 0 0 2px; color: #8175c8; font-size: 9.5px; font-weight: 650; }
+.journey-analysis > header small { color: #6375c3; }
+.journey-card h2 { margin: 0; color: #2c384c; font-size: 16px; line-height: 1.35; font-weight: 680; letter-spacing: -.2px; }
+.journey-output { min-height: 28px; margin: 10px 0 11px; display: flex; align-items: center; gap: 10px; }
+.journey-output > span { flex: 0 0 auto; color: #a0a8b4; font-size: 9px; }
+.journey-output p { margin: 0; display: flex; flex-wrap: wrap; gap: 6px 10px; }
+.journey-output b { display: inline-flex; align-items: center; gap: 3px; color: #707b8d; font-size: 9.5px; font-weight: 550; }
+.journey-output b svg { width: 10px; height: 10px; color: var(--purple); stroke-width: 2.4; }
+.journey-analysis .journey-output b svg { color: #5268d2; }
+.journey-actions { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 7px; }
+.journey-actions > button { min-width: 0; min-height: 54px; display: flex; align-items: center; gap: 5px; padding: 8px 9px; border: 1px solid #e8eaf0; border-radius: 10px; background: rgba(255,255,255,.86); text-align: left; transition: .17s ease; }
+.journey-actions > button:hover, .journey-actions > button.selected { border-color: #c9c1ff; background: #f5f2ff; color: var(--purple); transform: translateY(-1px); box-shadow: 0 5px 13px rgba(70,58,136,.06); }
+.journey-analysis .journey-actions > button:hover, .journey-analysis .journey-actions > button.selected { border-color: #cbd4fa; background: #f5f7ff; color: #4f63c6; }
+.journey-actions > button > span { min-width: 0; flex: 1; display: grid; gap: 3px; }
+.journey-actions strong { overflow: hidden; color: #3d495d; font-size: 10.5px; font-weight: 650; white-space: nowrap; text-overflow: ellipsis; }
+.journey-actions button:hover strong, .journey-actions button.selected strong { color: currentColor; }
+.journey-actions small { overflow: hidden; color: #9ca5b3; font-size: 8px; white-space: nowrap; text-overflow: ellipsis; }
+.journey-actions svg { flex: 0 0 auto; width: 11px; height: 11px; color: #aab1bd; }
+.home-compose-section { margin-top: 0; padding: 15px; border: 1px solid #e0e3ed; border-radius: 20px; background: rgba(255,255,255,.82); box-shadow: 0 18px 48px rgba(44,51,78,.06); transition: border-color .22s ease, box-shadow .22s ease; }
+.home-compose-section.is-template-mode { border-color: #d4cff7; box-shadow: 0 20px 52px rgba(76,62,147,.09); }
+.home-compose-section .composer-large { min-height: 144px; border-color: #e1e4ec; border-radius: 15px; box-shadow: 0 4px 16px rgba(42,50,76,.035), inset 0 1px rgba(255,255,255,.8); }
+.home-compose-section .composer-large textarea { height: 66px; font-size: 14px; }
+.composer-template-editor { flex: 1; min-width: 0; min-height: 68px; padding: 8px 3px 4px; outline: 0; color: #37445a; font-size: 16px; font-weight: 500; line-height: 2.55; cursor: text; }
+.composer-template-editor > span { white-space: nowrap; }
+.template-slot-wrap { display: inline-flex; align-items: baseline; vertical-align: middle; white-space: nowrap; }
+.template-slot-wrap > span { white-space: nowrap; }
+.template-slot { display: inline-block; min-width: var(--slot-width,130px); max-width: calc(100% - 12px); height: 31px; margin: 0 5px; padding: 0 7px 2px; border-bottom: 1.5px solid #cfd4df; color: #8f98a8; font-size: 11px; font-weight: 550; line-height: 28px; text-align: center; transition: border-color .16s ease, background .16s ease, box-shadow .16s ease, color .16s ease; }
+.template-slot:hover { border-bottom-color: #aaa0ed; background: rgba(246,244,255,.55); }
+.template-slot.is-active { border-bottom-color: var(--purple); background: #f7f5ff; color: #5542c5; box-shadow: 0 3px 0 -1px rgba(105,86,245,.12); }
+.template-slot.is-optional { border-bottom-style: dashed; }
+.template-slot.is-optional.is-active { border-bottom-style: solid; }
+.home-guide-backdrop { position: fixed; z-index: 180; inset: 0; display: grid; place-items: center; padding: 24px; background: rgba(28,34,49,.32); backdrop-filter: blur(8px); animation: guide-fade .2s ease-out; }
+@keyframes guide-fade { from { opacity: 0; } }
+.home-guide { width: min(660px,100%); overflow: hidden; border: 1px solid rgba(255,255,255,.8); border-radius: 22px; background: white; box-shadow: 0 28px 80px rgba(29,34,55,.22); animation: guide-rise .24s ease-out; }
+@keyframes guide-rise { from { opacity: 0; transform: translateY(12px) scale(.985); } }
+.home-guide > header { min-height: 91px; display: flex; align-items: center; gap: 13px; padding: 19px 21px; border-bottom: 1px solid #eceef3; background: linear-gradient(135deg,#faf9ff,#fff); }
+.home-guide > header > span { width: 43px; height: 43px; display: grid; place-items: center; border-radius: 13px; background: linear-gradient(145deg,#7660ff,#5d4cec); color: white; box-shadow: 0 8px 20px rgba(105,86,245,.22); }
+.home-guide > header > span svg { width: 19px; height: 19px; }
+.home-guide > header > div { min-width: 0; flex: 1; }
+.home-guide > header small { color: #8779df; font-size: 9px; font-weight: 700; letter-spacing: .08em; }
+.home-guide h2 { margin: 4px 0 0; color: #273348; font-size: 21px; }
+.home-guide > header > button { width: 31px; height: 31px; display: grid; place-items: center; border: 0; border-radius: 9px; background: transparent; color: #929bab; }
+.home-guide > header > button:hover { background: #f2f3f7; color: #4f5b6f; }
+.guide-steps { padding: 7px 21px; }
+.guide-steps article { min-height: 82px; display: grid; grid-template-columns: 28px 36px minmax(0,1fr); align-items: center; gap: 10px; border-bottom: 1px solid #eff0f4; }
+.guide-steps article:last-child { border-bottom: 0; }
+.guide-steps b { color: #c5c9d3; font-size: 10px; }
+.guide-steps article > span { width: 34px; height: 34px; display: grid; place-items: center; border-radius: 10px; background: #f3f1ff; color: var(--purple); }
+.guide-steps article > span svg { width: 15px; height: 15px; }
+.guide-steps strong { color: #3f4b60; font-size: 12px; }
+.guide-steps p { margin: 4px 0 0; color: #8a94a5; font-size: 10.5px; line-height: 1.55; }
+.home-guide > footer { min-height: 72px; display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 13px 21px; border-top: 1px solid #eceef3; background: #fafbfe; }
+.home-guide > footer p { display: flex; align-items: center; gap: 6px; margin: 0; color: #959ead; font-size: 9.5px; }
+.home-guide > footer p svg { flex: 0 0 auto; width: 13px; color: #8a76f4; }
+.home-guide > footer button { min-height: 38px; display: flex; align-items: center; gap: 8px; padding: 0 14px; border: 0; border-radius: 10px; background: linear-gradient(135deg,#745eff,#5b4aec); color: white; font-size: 10.5px; font-weight: 600; box-shadow: 0 8px 18px rgba(105,86,245,.2); }
+.home-guide > footer button svg { width: 13px; }
 .composer { position: relative; width: 100%; min-height: 92px; border: 1px solid #d9dee8; border-radius: 16px; background: white; box-shadow: 0 0 0 3px rgba(76,98,126,.05), 0 12px 36px rgba(33,45,67,.06); padding: 14px 17px 55px; transition: .2s ease; }
 .composer:focus-within { border-color: #a99dff; box-shadow: 0 0 0 3px rgba(105,86,245,.09), 0 14px 38px rgba(33,45,67,.08); }
 .composer-large { min-height: 202px; border-radius: 15px; padding: 17px 19px 57px; }
@@ -190,23 +259,6 @@ button.context-chip { cursor: pointer; }
 .attachment-chip strong { overflow: hidden; font-size: 10.5px; font-weight: 600; white-space: nowrap; text-overflow: ellipsis; }
 .attachment-chip small { color: #929bad; font-size: 8.5px; }
 .attachment-chip > button { flex: 0 0 auto; display: grid; place-items: center; border: 0; background: transparent; color: #8f98a7; padding: 2px; }
-.recommendations { width: min(880px, 94%); margin: auto auto 0; padding-top: clamp(64px, 10vh, 104px); }
-.recommendation-head { height: 45px; display: flex; align-items: center; justify-content: space-between; }
-.recommendation-head h2 { margin: 0; display: flex; align-items: center; gap: 10px; font-size: 15px; color: #29364a; }
-.recommendation-head h2 > span { width: 31px; height: 31px; display: grid; place-items: center; border-radius: 10px; background: #f2efff; color: var(--purple); }
-.recommendation-head h2 svg { width: 13px; }
-.recommendation-head > button { border: 1px solid #e2e5ec; border-radius: 15px; padding: 6px 12px; background: white; color: var(--purple); font-size: 11px; box-shadow: 0 3px 8px rgba(40,45,70,.03); }
-.recommendation-list { margin-top: 9px; overflow: hidden; border-radius: 16px; background: rgba(255,255,255,.9); box-shadow: 0 12px 42px rgba(66,72,103,.035); }
-.recommendation-list > button { width: 100%; min-height: 58px; border: 0; border-bottom: 1px solid #eceef4; padding: 0 14px; background: transparent; display: grid; grid-template-columns: 96px minmax(0,1fr) 105px 34px; align-items: center; gap: 10px; text-align: left; transition: .18s ease; }
-.recommendation-list > button:last-child { border-bottom: 0; }
-.recommendation-list > button:hover { background: #faf9ff; transform: translateX(2px); }
-.mode-pill { justify-self: start; padding: 5px 10px; border-radius: 14px; background: #f0ecff; color: var(--purple); font-size: 10.5px; font-weight: 600; }
-.recommendation-list strong { overflow: hidden; white-space: nowrap; text-overflow: ellipsis; font-size: 13px; }
-.recommendation-list small { justify-self: end; color: #9ca5b5; font-size: 10.5px; white-space: nowrap; }
-.recommendation-list i { width: 29px; height: 29px; display: grid; place-items: center; border-radius: 10px; background: #faf9ff; color: #a999ff; font-style: normal; }
-.recommendation-list i svg { width: 14px; }
-.tour-button { position: fixed; right: 21px; bottom: 20px; min-height: 40px; display: flex; align-items: center; gap: 7px; padding: 0 14px; border: 1px solid #e2defd; border-radius: 13px; background: rgba(255,255,255,.94); color: var(--purple); font-size: 11px; box-shadow: 0 10px 28px rgba(71,58,148,.1); }
-.tour-button svg { width: 13px; }
 
 /* Conversation */
 .conversation-page { width: 100%; height: 100%; display: flex; flex-direction: column; background: white; }
@@ -697,6 +749,10 @@ button.context-chip { cursor: pointer; }
   .profile-row strong { font-size: 13px; }
   .profile-row small { font-size: 10.5px; }
   .primary-button, .secondary-button, .danger-button, .link-button, .icon-text-button, .text-danger-button { min-height: 42px; font-size: 14.5px; }
+  .home-content { width: min(1300px,calc(100% - 86px)); }
+  .home-hero h1 { font-size: 54px; }
+  .journey-actions strong { font-size: 12px; }
+  .journey-actions small { font-size: 9.5px; }
   .page-header h1 { font-size: 32px; }
   .wiki-page-header { min-height: 82px; }
   .tree-root > button { height: 43px; font-size: 15px; }
@@ -714,6 +770,14 @@ button.context-chip { cursor: pointer; }
   .approval-row { min-height: 72px; font-size: 14px; }
   .approval-head { min-height: 47px; font-size: 12px; }
   .approval-row > button { font-size: 14px; }
+}
+
+@media (max-width: 1180px) {
+  .home-content { width: min(820px,calc(100% - 48px)); }
+  .journey-grid { grid-template-columns: 1fr; }
+  .journey-card { padding: 20px 22px; }
+  .journey-card + .journey-card { border-left: 0; border-top: 1px solid #eaecf2; border-radius: 0 0 14px 14px; }
+  .journey-output { min-height: auto; }
 }
 
 @media (max-width: 1050px) {
@@ -735,14 +799,27 @@ button.context-chip { cursor: pointer; }
   .mobile-nav button svg { width: 15px; height: 15px; }
   .mobile-nav button.active { background: #f0edff; color: var(--purple); }
   .app-main { padding-top: 57px; }
-  .home-content { width: calc(100% - 30px); padding-top: 35px; }
-  .hero-heading h1 { font-size: 30px; }
-  .hero-alpha, .hero-heading::before, .hero-heading::after { display: none; }
-  .composer-large { height: 180px; }
-  .recommendations { width: 100%; padding-top: 45px; }
-  .recommendation-list > button { grid-template-columns: 82px minmax(0,1fr) 30px; }
-  .recommendation-list small { display: none; }
-  .tour-button { right: 12px; bottom: 12px; }
+  .home-content { width: calc(100% - 28px); padding: 18px 0 38px; }
+  .home-toolbar { min-height: 32px; }
+  .home-hero { padding: 32px 2px 24px; }
+  .home-hero h1 { font-size: 34px; letter-spacing: -1.35px; }
+  .home-title-break { display: none; }
+  .home-hero p { font-size: 12px; }
+  .journey-grid { grid-template-columns: 1fr; gap: 0; padding: 7px; border-radius: 17px; }
+  .journey-card { padding: 15px 13px; border-radius: 12px; }
+  .journey-card + .journey-card { border-radius: 0 0 12px 12px; }
+  .journey-card h2 { font-size: 17px; }
+  .journey-output p { gap: 6px 10px; }
+  .journey-actions { grid-template-columns: 1fr; }
+  .journey-actions > button { min-height: 49px; }
+  .journey-actions > button > span { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+  .home-compose-section { padding: 12px; border-radius: 17px; }
+  .home-compose-section .composer-large { min-height: 150px; }
+  .home-guide-backdrop { padding: 13px; }
+  .home-guide > header { padding: 17px; }
+  .guide-steps { padding-inline: 17px; }
+  .home-guide > footer { align-items: stretch; flex-direction: column; padding: 14px 17px 17px; }
+  .home-guide > footer button { justify-content: center; }
   .conversation-feed { width: calc(100% - 28px); }
   .assistant-row { gap: 10px; }
   .assistant-avatar { width: 33px; height: 33px; }

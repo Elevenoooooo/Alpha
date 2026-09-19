@@ -2,6 +2,7 @@ import { ArrowRight, CheckCircle2, Clock3, FileSearch, PackageCheck, RotateCcw, 
 import { useMemo, useState } from "react";
 import { AnimatedPanel } from "../components/layout/AnimatedPanel";
 import { useWorkbench } from "../context/WorkbenchContext";
+import { DesignProductDetail } from "../components/chat/DesignDetails";
 import type { Product, ProductStatus } from "../domain/types";
 
 const filters: Array<"全部" | ProductStatus> = ["全部", "待询价", "询价中", "询价通过", "询价失败"];
@@ -61,7 +62,7 @@ export function ProductsPage() {
           </section>
         </div>
       )}
-      {detail && (
+      {detail?.details ? <DesignProductDetail product={detail} onClose={() => setDetail(undefined)} /> : detail && (
         <div className="drawer-backdrop" onMouseDown={(event) => event.target === event.currentTarget && setDetail(undefined)}>
           <aside className="detail-drawer">
             <header className="drawer-header"><div><h2>{detail.name}</h2><p>{detail.id}</p></div><button onClick={() => setDetail(undefined)}><X /></button></header>

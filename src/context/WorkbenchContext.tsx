@@ -4,7 +4,6 @@ import {
   useContext,
   useEffect,
   useMemo,
-  useRef,
   useState,
   type ReactNode,
 } from "react";
@@ -15,11 +14,13 @@ import {
   initialWikiPages,
   productPlans,
 } from "../data/mockData";
+import { canApplyAdjustment, getAdjustedCase, getDesignCase, matchDesignCase } from "../data/designCases";
 import type {
   AppView,
   MessageAttachment,
   Product,
   ProductFlow,
+  ProductTurn,
   ProductRequestContext,
   ProductStatus,
   RawFile,
@@ -38,7 +39,9 @@ type WorkbenchValue = {
   setAssetCenterLevel: (level: AssetCenterLevel) => void;
   productFlow: ProductFlow;
   startProductTask: (prompt: string, context?: ProductRequestContext) => void;
-  confirmProductPlan: () => void;
+  startDesignCase: (caseId: string) => void;
+  reviseProductTask: (instruction: string, context?: ProductRequestContext) => boolean;
+  productHistory: ProductTurn[];
   resetConversation: () => void;
   products: Product[];
   plans: Product[];
@@ -127,6 +130,7 @@ export function WorkbenchProvider({ children }: { children: ReactNode }) {
     executionStep: 0,
   });
   const [products, setProducts] = useState<Product[]>(initialProductRecords);
+  const [productHistory, setProductHistory] = useState<ProductTurn[]>([]);
   const [plans, setPlans] = useState<Product[]>(productPlans);
   const [wikiPages, setWikiPages] = useState<WikiPage[]>(initialWikiPages);
   const [rawFiles, setRawFiles] = useState<RawFile[]>(initialRawFiles);
@@ -135,19 +139,11 @@ export function WorkbenchProvider({ children }: { children: ReactNode }) {
   const [approval, setApproval] = useState<WikiApproval>();
   const [approvalHistory, setApprovalHistory] = useState<WikiApproval[]>([]);
   const [flash, setFlash] = useState<string>();
-  const timersRef = useRef<number[]>([]);
 
   const notify = useCallback((message: string) => {
     setFlash(message);
     window.setTimeout(() => setFlash(undefined), 3000);
   }, []);
-
-  useEffect(
-    () => () => {
-      timersRef.current.forEach((timer) => window.clearTimeout(timer));
-    },
-    [],
-  );
 
   useEffect(() => {
     if (wikiTask?.status !== "processing") return;
@@ -166,44 +162,68 @@ export function WorkbenchProvider({ children }: { children: ReactNode }) {
   }, [wikiTask?.status, wikiTask?.id]);
 
   const startProductTask = useCallback((prompt: string, context?: ProductRequestContext) => {
-    const kind = /设计|方案|产品/.test(prompt) ? "product" : /经营|分析|同比|原因/.test(prompt) ? "analysis" : "quick";
+    const caseId = matchDesignCase(prompt);
+    const isFastRequest = /快速|快点/.test(prompt);
+    const isProductRequest = Boolean(caseId) || /设计|方案|产品|延保机会|优化/.test(prompt);
+    const kind = isFastRequest ? "quick" : isProductRequest ? "product" : /经营|分析|同比|原因/.test(prompt) ? "analysis" : "quick";
+    const startedAt = Date.now();
+    setProductHistory([]);
+    setPlans(getDesignCase(caseId).products);
     setProductFlow({
       stage: kind === "product" ? "planning" : kind === "quick" ? "result" : "running",
       kind,
       prompt,
       executionStep: 0,
       context,
+      caseId: kind === "product" ? caseId ?? "phone" : undefined,
+      runId: crypto.randomUUID(),
+      startedAt,
+      completedAt: kind === "quick" ? startedAt : undefined,
+      adjustments: [],
     });
     setView("conversation");
-    if (kind === "analysis") {
-      timersRef.current.push(
-        window.setTimeout(() => setProductFlow((flow) => ({ ...flow, executionStep: 2 })), 700),
-        window.setTimeout(() => setProductFlow((flow) => ({ ...flow, stage: "result", executionStep: 4 })), 1900),
-      );
-    }
   }, []);
 
-  const confirmProductPlan = useCallback(() => {
-    setProductFlow((flow) => ({ ...flow, stage: "running", executionStep: 0 }));
-    timersRef.current.forEach((timer) => window.clearTimeout(timer));
-    timersRef.current = [];
-    [1, 2, 3, 4].forEach((step, index) => {
-      const timer = window.setTimeout(() => {
-        setProductFlow((flow) => ({ ...flow, executionStep: step }));
-      }, 550 * (index + 1));
-      timersRef.current.push(timer);
-    });
-    timersRef.current.push(
-      window.setTimeout(() => {
-        setProductFlow((flow) => ({ ...flow, stage: "result", executionStep: 4 }));
-      }, 2900),
-    );
-  }, []);
+  const startDesignCase = useCallback((caseId: string) => {
+    startProductTask(getDesignCase(caseId).prompt);
+  }, [startProductTask]);
+
+  const reviseProductTask = useCallback((instruction: string, context?: ProductRequestContext) => {
+    if (!productFlow.caseId || !canApplyAdjustment(instruction)) {
+      notify("这条调整尚未应用。当前 Demo 支持收窄渠道、优先分析人群场景或暂不定价；原结果保持不变。");
+      return false;
+    }
+    const adjustments = [...(productFlow.adjustments ?? []), instruction];
+    const updated = getAdjustedCase(productFlow.caseId, adjustments);
+    setProductHistory(turns => [...turns, {flow:{...productFlow,stage:productFlow.stage === "result" ? "result" : "superseded",completedAt:productFlow.completedAt ?? Date.now()},products:plans}]);
+    setPlans(updated.products);
+    setProductFlow({...productFlow,prompt:instruction,context,stage:"planning",executionStep:0,runId:crypto.randomUUID(),startedAt:Date.now(),completedAt:undefined,adjustments});
+    return true;
+  }, [notify, plans, productFlow]);
+
+  // Every timer is bound to a run. Changing case or revising a plan cancels stale work.
+  useEffect(() => {
+    if (!productFlow.runId || !["planning", "running"].includes(productFlow.stage)) return;
+    const runId = productFlow.runId;
+    const steps = productFlow.caseId ? getAdjustedCase(productFlow.caseId, productFlow.adjustments).process.length : 4;
+    const update = (patch: Partial<ProductFlow>) => setProductFlow(flow => flow.runId === runId ? {...flow,...patch} : flow);
+    if (productFlow.kind === "analysis") {
+      const timers = [
+        window.setTimeout(() => update({executionStep:2}), 700),
+        window.setTimeout(() => update({stage:"result",executionStep:4,completedAt:Date.now()}), 1900),
+      ];
+      return () => timers.forEach(window.clearTimeout);
+    }
+    const timers = [window.setTimeout(() => update({stage:"running"}), 1800)];
+    for (let step = 1; step < steps; step++) timers.push(window.setTimeout(() => update({executionStep:step}), 1800 + step * 2100));
+    timers.push(window.setTimeout(() => update({stage:"result",executionStep:steps,completedAt:Date.now()}), 1800 + steps * 2100));
+    return () => timers.forEach(window.clearTimeout);
+    // A run's initial snapshot is intentional; progress changes must not restart its timers.
+  }, [productFlow.runId]);
 
   const resetConversation = useCallback(() => {
-    timersRef.current.forEach((timer) => window.clearTimeout(timer));
-    timersRef.current = [];
     setProductFlow({ stage: "idle", kind: "product", prompt: "", executionStep: 0 });
+    setProductHistory([]);
     setView("home");
   }, []);
 
@@ -484,7 +504,9 @@ export function WorkbenchProvider({ children }: { children: ReactNode }) {
       setAssetCenterLevel,
       productFlow,
       startProductTask,
-      confirmProductPlan,
+      startDesignCase,
+      reviseProductTask,
+      productHistory,
       resetConversation,
       products,
       plans,
@@ -514,7 +536,9 @@ export function WorkbenchProvider({ children }: { children: ReactNode }) {
       approvalHistory,
       assetCenterLevel,
       approveWiki,
-      confirmProductPlan,
+      startDesignCase,
+      reviseProductTask,
+      productHistory,
       flash,
       notify,
       pauseWikiTask,

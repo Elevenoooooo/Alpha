@@ -43,6 +43,9 @@ type ComposerProps = {
   wikiDepositMode?: boolean;
   onChangeWikiDepositMode?: (active: boolean) => void;
   onNotify?: (message: string) => void;
+  focusRequest?: number;
+  templateEditor?: ReactNode;
+  submitDisabled?: boolean;
 };
 
 export function Composer({
@@ -62,6 +65,9 @@ export function Composer({
   wikiDepositMode = false,
   onChangeWikiDepositMode,
   onNotify,
+  focusRequest,
+  templateEditor,
+  submitDisabled = false,
 }: ComposerProps) {
   const [panel, setPanel] = useState<MenuPanel>();
   const [skillQuery, setSkillQuery] = useState("");
@@ -70,6 +76,7 @@ export function Composer({
   const [resourceTab, setResourceTab] = useState<ResourceTab>("wiki");
   const [menuPlacement, setMenuPlacement] = useState({ direction: "up" as "up" | "down", resourceListHeight: 286 });
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
   const attachButtonRef = useRef<HTMLButtonElement>(null);
   const menuRootRef = useRef<HTMLDivElement>(null);
 
@@ -104,7 +111,14 @@ export function Composer({
     };
   }, [panel]);
 
-  const canSubmit = wikiDepositMode ? Boolean(attachment) : Boolean(value.trim() || attachment);
+  useEffect(() => {
+    if (!focusRequest) return;
+    textareaRef.current?.focus();
+    const cursor = textareaRef.current?.value.length ?? 0;
+    textareaRef.current?.setSelectionRange(cursor, cursor);
+  }, [focusRequest]);
+
+  const canSubmit = !submitDisabled && (wikiDepositMode ? Boolean(attachment) : Boolean(value.trim() || attachment));
 
   const submit = () => {
     if (wikiDepositMode && !attachment) {
@@ -226,13 +240,16 @@ export function Composer({
             @Wiki
           </button>
         )}
-        <textarea
-          value={value}
-          onChange={(event) => handleTextChange(event.target.value)}
-          onKeyDown={handleKeyDown}
-          placeholder={activePlaceholder}
-          aria-label={activePlaceholder}
-        />
+        {templateEditor ?? (
+          <textarea
+            ref={textareaRef}
+            value={value}
+            onChange={(event) => handleTextChange(event.target.value)}
+            onKeyDown={handleKeyDown}
+            placeholder={activePlaceholder}
+            aria-label={activePlaceholder}
+          />
+        )}
       </div>
 
       <div className="composer-actions">

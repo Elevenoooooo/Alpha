@@ -14,9 +14,24 @@ export type Product = {
   underwriting: "通过" | "待人工确认";
   status?: ProductStatus;
   used?: boolean;
+  recommended?: boolean;
+  relationship?: "线上替代品" | "线上互补品";
+  comparisonTarget?: string;
+  relationshipReason?: string;
+  details?: {
+    serviceName: string;
+    spuName: string;
+    serviceCategory: string;
+    underwritingCategory: string;
+    waitingPeriod: string;
+    paymentMethod: string;
+    exclusions: string;
+    channels: string;
+    underwritingNote: string;
+  };
 };
 
-export type ProductFlowStage = "idle" | "planning" | "running" | "result";
+export type ProductFlowStage = "idle" | "planning" | "running" | "result" | "superseded";
 
 export type MessageAttachment = {
   id: string;
@@ -53,7 +68,14 @@ export type ProductFlow = {
   prompt: string;
   executionStep: number;
   context?: ProductRequestContext;
+  caseId?: string;
+  runId?: string;
+  startedAt?: number;
+  completedAt?: number;
+  adjustments?: string[];
 };
+
+export type ProductTurn = { flow: ProductFlow; products: Product[] };
 
 export type WikiVersion = {
   version: number;

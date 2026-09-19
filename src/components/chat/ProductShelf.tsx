@@ -17,6 +17,7 @@ export function ProductShelf({
   onDetail: (product: Product) => void;
 }) {
   const root = useRef<HTMLElement>(null);
+  const displayProducts = [...products].sort((a, b) => Number(Boolean(b.recommended)) - Number(Boolean(a.recommended)));
 
   useGSAP(
     () => {
@@ -41,8 +42,12 @@ export function ProductShelf({
         <small>{products.filter((product) => product.underwriting === "通过").length} / {products.length} 通过</small>
       </header>
       <div className="product-grid">
-        {products.map((product) => (
-          <article className={`product-plan-card ${product.used ? "is-used" : ""}`} key={product.id}>
+        {displayProducts.map((product) => (
+          <article className={`product-plan-card ${product.recommended ? "is-recommended" : ""} ${product.used ? "is-used" : ""}`} key={product.id}>
+            <div className="design-product-tags">
+              {product.recommended && <span className="recommend-tag">优先推荐</span>}
+              {product.relationship && <span className={product.relationship === "线上互补品" ? "complement-tag" : "substitute-tag"} title={product.relationshipReason}>{product.relationship}</span>}
+            </div>
             <div className="product-title-row"><h4>{product.name}</h4><strong>{product.price}</strong></div>
             <div className="product-id">产品ID：{product.id}</div>
             <p>{product.serviceContent}</p>

@@ -7,6 +7,7 @@ import {
   MessageSquarePlus,
   PackageCheck,
   Plus,
+  Sparkles,
 } from "lucide-react";
 import { useWorkbench } from "../../context/WorkbenchContext";
 import { Brand } from "./Brand";
@@ -14,7 +15,7 @@ import { Brand } from "./Brand";
 const projects = ["新项目 1", "新项目 2", "新项目 3", "新项目 4"];
 
 export function Sidebar() {
-  const { view, setView, resetConversation, productFlow, wikiTask, setAssetCenterLevel } = useWorkbench();
+  const { view, setView, resetConversation, productFlow, wikiTask, setAssetCenterLevel, startDesignCase } = useWorkbench();
   const currentTask = productFlow.prompt || "昨天手机类目保费最大的10个品牌...";
 
   return (
@@ -31,6 +32,9 @@ export function Sidebar() {
         <button className={view === "products" ? "active" : ""} onClick={() => setView("products")}>
           <PackageCheck />
           <span>我的产品</span>
+        </button>
+        <button className="design-sidebar-entry" onClick={() => startDesignCase("vinyl")}>
+          <Sparkles /><span>产品设计演示</span><small>Demo</small>
         </button>
         <button className={view === "wiki" ? "active" : ""} onClick={() => { setAssetCenterLevel("catalog"); setView("wiki"); }}>
           <Archive />
