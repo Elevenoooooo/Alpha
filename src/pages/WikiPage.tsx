@@ -47,7 +47,7 @@ const historicalApprovals: WikiApproval[] = [
     id: "history-approved",
     taskId: "history-task-1",
     title: "产品询报价流程说明.docx · Wiki 变更",
-    submitter: "晨雨",
+    submitter: "吕涵",
     submittedAt: "2026-08-22 09:10",
     status: "approved",
     reviewer: "周然",
@@ -59,7 +59,7 @@ const historicalApprovals: WikiApproval[] = [
     id: "history-rejected",
     taskId: "history-task-2",
     title: "延保价格口径草案.docx · Wiki 变更",
-    submitter: "晨雨",
+    submitter: "吕涵",
     submittedAt: "2026-08-18 14:05",
     status: "rejected",
     reviewer: "周然",
@@ -103,7 +103,7 @@ export function WikiPage() {
   const inputRef = useRef<HTMLInputElement>(null);
   const pageSurfaceRef = useRef<HTMLDivElement>(null);
   const selectedPage = wikiPages.find((page) => page.id === selectedWikiPageId) ?? wikiPages[0];
-  const actorName = identity === "reviewer" ? "周然" : "晨雨";
+  const actorName = identity === "reviewer" ? "周然" : "吕涵";
   const approvals = useMemo(() => {
     const unique = new Map<string, WikiApproval>();
     [approval, ...approvalHistory, ...historicalApprovals].forEach((item) => item && unique.set(item.id, item));

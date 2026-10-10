@@ -258,7 +258,7 @@ export function WorkbenchProvider({ children }: { children: ReactNode }) {
   const startWikiTask = useCallback(
     (
       attachments: MessageAttachment[],
-      submitter = "晨雨",
+      submitter = "吕涵",
       instruction?: string,
     ): StartWikiResult => {
       const newAttachments = attachments.filter((attachment) => !rawFiles.some((file) => file.name === attachment.name));

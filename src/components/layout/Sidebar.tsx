@@ -7,8 +7,10 @@ import {
   MessageSquarePlus,
   PackageCheck,
   Plus,
+  Settings2,
   Sparkles,
 } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
 import { useWorkbench } from "../../context/WorkbenchContext";
 import { Brand } from "./Brand";
 
@@ -17,6 +19,24 @@ const projects = ["新项目 1", "新项目 2", "新项目 3", "新项目 4"];
 export function Sidebar() {
   const { view, setView, resetConversation, productFlow, wikiTask, setAssetCenterLevel, startDesignCase } = useWorkbench();
   const currentTask = productFlow.prompt || "昨天手机类目保费最大的10个品牌...";
+  const [profileOpen, setProfileOpen] = useState(false);
+  const profileRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!profileOpen) return;
+    const closeMenu = (event: PointerEvent) => {
+      if (!profileRef.current?.contains(event.target as Node)) setProfileOpen(false);
+    };
+    const closeWithEscape = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setProfileOpen(false);
+    };
+    window.addEventListener("pointerdown", closeMenu);
+    window.addEventListener("keydown", closeWithEscape);
+    return () => {
+      window.removeEventListener("pointerdown", closeMenu);
+      window.removeEventListener("keydown", closeWithEscape);
+    };
+  }, [profileOpen]);
 
   return (
     <aside className="sidebar">
@@ -83,10 +103,25 @@ export function Sidebar() {
 
       <div className="sidebar-footer">
         <button className="subscription"><BellDot /><span>我的订阅</span><b>4</b></button>
-        <div className="profile-row">
-          <span className="avatar">晨</span>
-          <span><strong>晨雨</strong><small>解决方案岗</small></span>
-          <span className="profile-menu">☰</span>
+        <div className="profile-entry" ref={profileRef}>
+          {profileOpen && (
+            <div className="profile-popover" role="menu">
+              <div className="profile-popover-head">
+                <span className="avatar">涵</span>
+                <span><strong>吕涵</strong><small>解决方案岗</small></span>
+              </div>
+              <button role="menuitem" onClick={() => { setView("settings"); setProfileOpen(false); }}>
+                <span className="profile-action-icon"><Settings2 /></span>
+                <span><strong>设置</strong></span>
+                <ChevronRight />
+              </button>
+            </div>
+          )}
+          <button className="profile-row" onClick={() => setProfileOpen((open) => !open)} aria-haspopup="menu" aria-expanded={profileOpen}>
+            <span className="avatar">涵</span>
+            <span><strong>吕涵</strong><small>解决方案岗</small></span>
+            <span className="profile-menu">•••</span>
+          </button>
         </div>
       </div>
     </aside>

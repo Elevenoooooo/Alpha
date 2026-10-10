@@ -11,6 +11,8 @@ export const productPlans: Product[] = [
     id: "TP1787915416137",
     name: "3年质保换新高价性能分列档",
     price: "¥459.0",
+    coverageRatio: "12.24%",
+    salesChannels: ["B集采"],
     serviceContent: "在服务期间，产品正常使用过程中出现三包范围内的机械或电气元件故障，提供维修或换新服务。",
     fulfillment: "换新",
     coverageLimit: "主商品实付金额 × 80%",
@@ -22,6 +24,8 @@ export const productPlans: Product[] = [
     id: "TP1787915416138",
     name: "2年碎屏引流保意外换屏",
     price: "¥131.49",
+    coverageRatio: "14.61%",
+    salesChannels: ["C加购"],
     serviceContent: "在服务期间，产品因不慎磕碰、挤压或跌落导致屏幕损坏时，提供一次维修或换屏服务。",
     fulfillment: "维修",
     coverageLimit: "主商品实付金额 × 90%",
@@ -33,6 +37,8 @@ export const productPlans: Product[] = [
     id: "TP1787915416139",
     name: "2年全保换新补购稳健档",
     price: "¥265.47",
+    coverageRatio: "14.35%",
+    salesChannels: ["C补购", "电销"],
     serviceContent: "在服务期间，产品正常使用过程中出现三包范围内故障时，提供维修或符合条件的换新服务。",
     fulfillment: "换新",
     coverageLimit: "主商品实付金额 × 80%",
@@ -42,21 +48,41 @@ export const productPlans: Product[] = [
   },
 ];
 
+function productDetails(name: string, fulfillment: string, waitingPeriod = "T+1年"): NonNullable<Product["details"]> {
+  return {
+    serviceName: name,
+    spuName: name,
+    serviceCategory: fulfillment === "服务补贴" ? "服务补贴" : "性能保障",
+    underwritingCategory: fulfillment === "服务补贴" ? "服务补贴" : "质保换新",
+    waitingPeriod,
+    paymentMethod: fulfillment === "服务补贴" ? "按实际费用核付" : "与服务商结算",
+    processingMethod: fulfillment,
+    serviceMethod: fulfillment === "换新" ? "质保换新" : fulfillment,
+    exclusions: "不包含故意损坏、非授权拆修、外观损伤及间接损失。",
+    underwritingNote: "Demo 产品字段，正式询价前需确认责任文本、履约资源与定价。",
+  };
+}
+
 export const initialProductRecords: Product[] = [
   {
-    ...productPlans[1],
-    id: "ALPHA-PD-20260826-012",
-    name: "手机碎屏意外换屏 2 年版",
-    price: "¥129.00",
-    status: "询价通过",
-    used: true,
+    ...productPlans[0], id: "1790158807015", name: "1000-2000元木质唱机3年质保换新", price: "¥112.50", coverageRatio: "9.04%", salesChannels: ["C加购", "电销"],
+    serviceContent: "服务有效期间内，商品在正常使用过程中出现三包范围内的性能故障（质量问题）从而无法正常使用，包括皮带老化转速不稳、马达走音、唱头接触不良等关键性能故障，我们将在服务限额内为用户提供一次换新服务。", fulfillment: "换新", coverageLimit: "主商品实付金额 × 90%", period: "3年", priceRange: "1000–2000元", status: "待询价", used: true,
+    details: productDetails("1000-2000元木质唱机3年质保换新", "换新"),
   },
   {
-    ...productPlans[0],
-    id: "ALPHA-PD-20260825-006",
-    name: "高端手机 3 年质保换新",
-    status: "询价中",
-    used: true,
+    ...productPlans[1], id: "1789553350067", name: "单反1年入门影像养护补贴", price: "¥36.45", coverageRatio: "3.65%", salesChannels: ["C补购"],
+    serviceContent: "在服务期间内，为购买的单反相机主机提供一次年度影像养护服务补贴，涵盖图像传感器清洁、机身外观清洁及整体性能检查。", fulfillment: "服务补贴", coverageLimit: "主商品实付金额 × 30%", period: "1年", priceRange: "3000–6000元", status: "待询价", used: true,
+    details: productDetails("单反1年入门影像养护补贴", "服务补贴", "T+30天"),
+  },
+  {
+    ...productPlans[0], id: "1787915319081", name: "扫地机4年质保换新", price: "¥352.10", coverageRatio: "11.74%", salesChannels: ["B集采", "物流"],
+    serviceContent: "在服务期间，产品正常使用过程中出现三包范围内的机械或电气元件性能故障时，在服务限额内提供检测及符合条件的换新服务。", fulfillment: "换新", coverageLimit: "主商品实付金额 × 90%", period: "4年", priceRange: "2000–5000元", status: "待询价", used: true,
+    details: productDetails("扫地机4年质保换新", "换新"),
+  },
+  {
+    ...productPlans[0], id: "1787913630056", name: "扫地机器人4年质保换新", price: "¥382.80", coverageRatio: "10.94%", salesChannels: ["C加购", "物流"],
+    serviceContent: "在服务期间，产品正常使用过程中出现三包范围内的机械或电气元件性能故障时，在服务限额内提供一次换新服务。", fulfillment: "换新", coverageLimit: "主商品实付金额 × 90%", period: "4年", priceRange: "3000–5000元", status: "待询价", used: true,
+    details: productDetails("扫地机器人4年质保换新", "换新"),
   },
 ];
 
@@ -198,7 +224,7 @@ export const initialWikiPages: WikiPage[] = [
       {
         version: 3,
         createdAt: "2026-08-20 10:18",
-        createdBy: "晨雨",
+        createdBy: "吕涵",
         reason: "明确退款回冲及去重口径",
         sources: ["延保经营口径V3.pdf"],
         content: [
@@ -211,7 +237,7 @@ export const initialWikiPages: WikiPage[] = [
       {
         version: 4,
         createdAt: "2026-09-03 10:42",
-        createdBy: "晨雨",
+        createdBy: "吕涵",
         reason: "剔除 B 集采并补充机会判断边界",
         sources: ["延保经营口径V3.pdf"],
         content: [
@@ -240,7 +266,7 @@ export const initialWikiPages: WikiPage[] = [
       {
         version: 1,
         createdAt: "2026-09-03 11:05",
-        createdBy: "晨雨",
+        createdBy: "吕涵",
         reason: "沉淀已研究品类的风险画像",
         sources: ["延保品类风险研究摘要.docx"],
         content: [
@@ -274,7 +300,7 @@ export const initialWikiPages: WikiPage[] = [
       {
         version: 2,
         createdAt: "2026-08-22 09:35",
-        createdBy: "晨雨",
+        createdBy: "吕涵",
         reason: "补充终态",
         sources: ["产品询报价流程说明.docx"],
         content: ["产品方案使用后进入待询价。", "提交后进入询价中。", "询报价终态为询价通过或询价失败。"],

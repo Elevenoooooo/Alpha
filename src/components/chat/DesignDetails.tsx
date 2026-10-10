@@ -1,7 +1,7 @@
-import { BookOpen, Download, X } from "lucide-react";
-import { useEffect, useRef, type ReactNode } from "react";
+import { BookOpen, Check, ChevronDown, Download, X } from "lucide-react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import type { DesignCase, DesignDocument } from "../../data/designCases";
-import type { Product } from "../../domain/types";
+import { SALES_CHANNEL_OPTIONS, type Product, type SalesChannel } from "../../domain/types";
 import { DesignMarkdown } from "./DesignMarkdown";
 
 function DetailDialog({ title, subtitle, children, onClose, className = "" }: { title: string; subtitle?: string; children: ReactNode; onClose: () => void; className?: string }) {
@@ -38,28 +38,74 @@ export function DesignDocumentDetail({ data, onClose, onDeposit }: { data: Desig
   </DetailDialog>;
 }
 
-function ReadField({ label, value, wide = false }: { label: string; value: string; wide?: boolean }) {
-  return <label className={wide ? "field-wide" : ""}><span>{label}</span><div className="design-read-field">{value}</div></label>;
+function FieldLabel({ label, required = false, hint }: { label: string; required?: boolean; hint?: string }) {
+  return <span className="product-form-label">{required && <i>*</i>}{label}{hint && <small>{hint}</small>}</span>;
+}
+
+function TextField({ label, value, required = false, disabled = false, suffix, wide = false }: { label: string; value: string; required?: boolean; disabled?: boolean; suffix?: string; wide?: boolean }) {
+  return <label className={wide ? "field-wide" : ""}><FieldLabel label={label} required={required} hint={disabled ? "（不可修改）" : undefined} /><div className={`product-form-control ${disabled ? "is-disabled" : ""}`}><input defaultValue={value} disabled={disabled} />{suffix && <b>{suffix}</b>}</div></label>;
+}
+
+function SelectField({ label, value, options, required = false, wide = false }: { label: string; value: string; options: string[]; required?: boolean; wide?: boolean }) {
+  const choices = Array.from(new Set([value, ...options].filter(Boolean)));
+  return <label className={wide ? "field-wide" : ""}><FieldLabel label={label} required={required} /><select className="product-form-select" defaultValue={value}>{choices.map(option => <option value={option} key={option}>{option}</option>)}</select></label>;
+}
+
+function TextareaField({ label, value, required = false }: { label: string; value: string; required?: boolean }) {
+  return <label className="field-wide"><FieldLabel label={label} required={required} /><textarea className="product-form-textarea" defaultValue={value} /></label>;
+}
+
+function ChannelField({ value }: { value: SalesChannel[] }) {
+  const [selected, setSelected] = useState<SalesChannel[]>(value);
+  const toggle = (channel: SalesChannel) => setSelected(items => items.includes(channel) ? items.filter(item => item !== channel) : [...items, channel]);
+  return <fieldset className="field-wide product-channel-field">
+    <legend><FieldLabel label="销售渠道" required /></legend>
+    <details className="product-multiselect">
+      <summary><span className={selected.length ? "" : "is-placeholder"}>{selected.length ? selected.join("、") : "请选择销售渠道"}</span><ChevronDown /></summary>
+      <div className="product-multiselect-menu" role="group" aria-label="销售渠道选项">
+        {SALES_CHANNEL_OPTIONS.map(channel => <button type="button" aria-pressed={selected.includes(channel)} onClick={() => toggle(channel)} key={channel}><span className="multiselect-check">{selected.includes(channel) && <Check />}</span>{channel}</button>)}
+      </div>
+    </details>
+  </fieldset>;
 }
 
 export function DesignProductDetail({ product, onClose, onUse }: { product: Product; onClose: () => void; onUse?: (product: Product) => void }) {
   const detail = product.details;
-  return <DetailDialog title="产品详情" subtitle={`${product.id} · 演示方案`} onClose={onClose}>
-    <div className="design-product-detail-body">
-      <div className="design-product-tags">{product.recommended && <span className="recommend-tag">优先推荐</span>}{product.relationship && <span className={product.relationship === "线上互补品" ? "complement-tag" : "substitute-tag"}>{product.relationship}</span>}</div>
-      <section><h3>基础信息</h3><div className="design-field-grid"><ReadField label="产品标题" value={product.name} wide /><ReadField label="销售价格（AI 建议）" value={product.price} wide /></div></section>
-      {product.comparisonTarget && <section className="design-relationship"><h3>与线上产品的关系</h3><p><strong>对标产品：</strong>{product.comparisonTarget}</p><p>{product.relationshipReason}</p></section>}
-      <section><h3>规格属性</h3><div className="design-field-grid">
-        <ReadField label="服务名称" value={detail?.serviceName ?? product.name} /><ReadField label="SPU 名称" value={detail?.spuName ?? product.name} />
-        <ReadField label="增值服务分类" value={detail?.serviceCategory ?? "性能保障"} /><ReadField label="核保产品分类" value={detail?.underwritingCategory ?? "延长保修"} />
-        <ReadField label="有效期" value={product.period} /><ReadField label="服务等待期 / 生效条件" value={detail?.waitingPeriod ?? "待确认"} />
-        <ReadField label="适用价段" value={product.priceRange} /><ReadField label="打款方式" value={detail?.paymentMethod ?? "待确认"} />
-        <ReadField label="履约方式" value={product.fulfillment} /><ReadField label="保障上限" value={product.coverageLimit} />
-        <ReadField label="销售渠道" value={detail?.channels ?? "待确认"} wide />
+  const [tab, setTab] = useState<"detail" | "history">("detail");
+  const numericPrice = product.price.replace(/[^\d.]/g, "");
+  const numericRatio = product.coverageRatio.replace("%", "");
+  return <DetailDialog title="产品详情" onClose={onClose}>
+    <nav className="product-detail-tabs"><button className={tab === "detail" ? "active" : ""} onClick={() => setTab("detail")}>产品详情</button><button className={tab === "history" ? "active" : ""} onClick={() => setTab("history")}>修订记录</button></nav>
+    {tab === "detail" ? <div className="design-product-detail-body">
+      <div className="product-detail-summary"><div><h2>{product.name}</h2><p>{product.id}</p></div><span className={`record-status status-${product.status ?? "待询价"}`}>{product.status ?? "待询价"}</span></div>
+      <section><h3>基础信息</h3><div className="design-field-grid">
+        <TextField label="产品标题" value={product.name} disabled wide />
+        <TextField label="建议单价" value={numericPrice} required suffix="元" />
+        <TextField label="投保比例（%）" value={numericRatio} required suffix="%" />
+        <TextField label="型号/价位段" value={product.priceRange} disabled wide />
       </div></section>
-      <section><h3>服务条款</h3><div className="design-field-grid"><ReadField label="服务内容描述" value={product.serviceContent} wide />{detail && <ReadField label="不包含的责任" value={detail.exclusions} wide />}</div></section>
-      <section><h3>评审信息</h3><p>Demo 评审状态：{product.underwriting}</p><p className="design-evidence-limit">{detail?.underwritingNote ?? "正式询价前需确认责任边界、履约资源与定价。"}</p></section>
-    </div>
+      <section><h3>规格属性</h3><div className="design-field-grid">
+        <TextField label="服务名称" value={detail?.serviceName ?? product.name} required />
+        <TextField label="SPU 名称" value={detail?.spuName ?? product.name} required />
+        <SelectField label="增值服务分类" value={detail?.serviceCategory ?? "性能保障"} options={["性能保障", "意外保障", "服务补贴"]} required />
+        <SelectField label="核保产品分类" value={detail?.underwritingCategory ?? "延长保修"} options={["质保换新", "延长保修", "意外保障", "服务补贴"]} required />
+        <SelectField label="服务有效期" value={product.period} options={["1年", "2年", "3年", "4年"]} required />
+        <SelectField label="服务等待期" value={detail?.waitingPeriod ?? "T+1年"} options={["即时生效", "T+30天", "T+1年", "原厂质保结束后起保"]} required />
+        <SelectField label="打款方式" value={detail?.paymentMethod ?? "待确认"} options={["与服务商结算", "按实际费用核付", "待确认"]} required />
+        <ChannelField value={product.salesChannels} />
+      </div></section>
+      <section><h3>服务条款</h3><div className="design-field-grid">
+        <TextareaField label="服务内容" value={product.serviceContent} required />
+        <SelectField label="履约方式" value={product.fulfillment} options={["维修", "换新", "维修后换新", "服务补贴"]} required />
+        <SelectField label="处理方式" value={detail?.processingMethod ?? product.fulfillment} options={["维修", "换新", "维修后换新", "定额补贴"]} required />
+        <SelectField label="保障上限" value={product.coverageLimit} options={["主商品实付金额 × 50%", "主商品实付金额 × 80%", "主商品实付金额 × 90%", "主商品实付金额 × 100%"]} required />
+        <TextField label="服务方式" value={detail?.serviceMethod ?? product.fulfillment} required />
+      </div></section>
+    </div> : <div className="product-revision-empty"><ClockIcon /><h3>暂无修订记录</h3><p>产品字段调整后，修订内容将在这里留痕。</p></div>}
     {onUse && <footer className="design-detail-footer"><span>使用后进入「我的产品」继续询价</span><button className="primary-button" disabled={product.used} onClick={() => onUse(product)}>{product.used ? "已使用方案" : "使用方案"}</button></footer>}
   </DetailDialog>;
+}
+
+function ClockIcon() {
+  return <span className="revision-clock" aria-hidden="true">↻</span>;
 }

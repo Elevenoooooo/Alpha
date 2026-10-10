@@ -33,23 +33,24 @@ function withDetails(product: Product, details: Partial<NonNullable<Product["det
     underwritingCategory: "延长保修",
     waitingPeriod: "原厂质保结束后起保",
     paymentMethod: product.fulfillment === "服务补贴" ? "按实际费用核付（演示）" : "与服务商结算（演示）",
+    processingMethod: product.fulfillment,
+    serviceMethod: product.fulfillment === "换新" ? "质保换新" : product.fulfillment,
     exclusions: "不包含故意损坏、非授权拆修、外观损伤及间接损失。",
-    channels: "C 延保、电销",
     underwritingNote: "仅为 Demo 评审结果；正式询价前需确认责任文本、履约资源与定价。",
     ...details,
   } };
 }
 
 const vinylProducts: Product[] = [
-  withDetails({ id:"TP1789699956596", name:"一体机2年质保换新保", price:"¥226.0", serviceContent:"在服务期间，您购买的不可修一体式黑胶唱片机在正常使用过程中发生约定的机械或电气故障，经检测无法维修时，提供一次同等规格换新服务；累计保障不超过主商品实付金额的 80%。不包含唱针、皮带等耗材的自然磨损。", fulfillment:"换新", coverageLimit:"主商品实付金额 × 80%", period:"2年", priceRange:"2000–3000元", underwriting:"通过", relationship:"线上替代品", comparisonTarget:"黑胶唱片机整机全保换新（示例在售款）", relationshipReason:"面向不可修一体机，将全保换新收窄为质量故障换新，建议接替同人群原方案。" }),
-  withDetails({ id:"TP1789699956597", name:"可修机型2年返厂维修保", price:"¥262.8", serviceContent:"在服务期间，您购买的唱头可拆卸、可更换式黑胶唱片机发生约定的机械或电气故障，提供返厂检测和维修服务；累计保障不超过主商品实付金额的 90%。不包含耗材自然磨损及未经授权的改装。", fulfillment:"维修", coverageLimit:"主商品实付金额 × 90%", period:"2年", priceRange:"3000–5000元", underwriting:"通过", relationship:"线上替代品", comparisonTarget:"可修机型整机换新（示例在售款）", relationshipReason:"对可维修机型优先维修，作为现有整机换新方案的替代设计。" }),
-  withDetails({ id:"TP1789699956598", name:"黑胶2年唱针皮带年度焕新权益", price:"¥45.00", serviceContent:"在服务期间，我们为您购买的黑胶唱片机提供按年度节奏的唱针、皮带更换费用补贴。每个服务年度限一次，经型号及更换凭证核验后按实际费用给付，两年累计不超过主商品实付金额的 50%。不补贴整机、马达、外接配件或非正常使用损坏。", fulfillment:"服务补贴", coverageLimit:"主商品实付金额 × 50%", period:"2年", priceRange:"500–1000元", underwriting:"通过", recommended:true, relationship:"线上互补品", comparisonTarget:"黑胶唱片机整机故障保障（示例在售款）", relationshipReason:"覆盖整机故障保障未包含的唱针、皮带损耗需求，与整机保障并存。" }, { serviceCategory:"耗材服务权益", underwritingCategory:"服务补贴", waitingPeriod:"购买后第 30 天生效", exclusions:"不包含整机、马达、唱头升级、外接配件和非正常使用损坏。" }),
+  withDetails({ id:"TP1789699956596", name:"一体机2年质保换新保", price:"¥226.0", coverageRatio:"9.04%", salesChannels:["C加购", "电销"], serviceContent:"在服务期间，您购买的不可修一体式黑胶唱片机在正常使用过程中发生约定的机械或电气故障，经检测无法维修时，提供一次同等规格换新服务；累计保障不超过主商品实付金额的 80%。不包含唱针、皮带等耗材的自然磨损。", fulfillment:"换新", coverageLimit:"主商品实付金额 × 80%", period:"2年", priceRange:"2000–3000元", underwriting:"通过", relationship:"线上替代品", comparisonTarget:"黑胶唱片机整机全保换新（示例在售款）", relationshipReason:"面向不可修一体机，将全保换新收窄为质量故障换新，建议接替同人群原方案。" }),
+  withDetails({ id:"TP1789699956597", name:"可修机型2年返厂维修保", price:"¥262.8", coverageRatio:"6.57%", salesChannels:["C补购", "电销"], serviceContent:"在服务期间，您购买的唱头可拆卸、可更换式黑胶唱片机发生约定的机械或电气故障，提供返厂检测和维修服务；累计保障不超过主商品实付金额的 90%。不包含耗材自然磨损及未经授权的改装。", fulfillment:"维修", coverageLimit:"主商品实付金额 × 90%", period:"2年", priceRange:"3000–5000元", underwriting:"通过", relationship:"线上替代品", comparisonTarget:"可修机型整机换新（示例在售款）", relationshipReason:"对可维修机型优先维修，作为现有整机换新方案的替代设计。" }),
+  withDetails({ id:"TP1789699956598", name:"黑胶2年唱针皮带年度焕新权益", price:"¥45.00", coverageRatio:"6.00%", salesChannels:["C加购", "C补购"], serviceContent:"在服务期间，我们为您购买的黑胶唱片机提供按年度节奏的唱针、皮带更换费用补贴。每个服务年度限一次，经型号及更换凭证核验后按实际费用给付，两年累计不超过主商品实付金额的 50%。不补贴整机、马达、外接配件或非正常使用损坏。", fulfillment:"服务补贴", coverageLimit:"主商品实付金额 × 50%", period:"2年", priceRange:"500–1000元", underwriting:"通过", recommended:true, relationship:"线上互补品", comparisonTarget:"黑胶唱片机整机故障保障（示例在售款）", relationshipReason:"覆盖整机故障保障未包含的唱针、皮带损耗需求，与整机保障并存。" }, { serviceCategory:"耗材服务权益", underwritingCategory:"服务补贴", waitingPeriod:"购买后第 30 天生效", exclusions:"不包含整机、马达、唱头升级、外接配件和非正常使用损坏。" }),
 ];
 
 const translatorProducts: Product[] = [
-  withDetails({ id:"DEMO-TR-001", name:"原厂到期2年延长保修", price:"¥167.85", serviceContent:"原厂质保结束后，连续两年覆盖约定的机械或电气故障，提供检测及维修服务。累计维修金额不超过主商品实付金额的 80%，不包含意外损坏和耗材自然衰减。", fulfillment:"维修", coverageLimit:"主商品实付金额 × 80%", period:"2年", priceRange:"1000–2000元", underwriting:"通过", relationship:"线上互补品", comparisonTarget:"原厂一年质保（示例在售服务）", relationshipReason:"向后延续保修时间，补足原厂质保结束后的服务空档。" }),
-  withDetails({ id:"DEMO-TR-002", name:"原厂到期2年质保换新兜底", price:"¥196.20", serviceContent:"原厂质保结束后两年内发生约定的机械或电气故障，先行维修。经授权检测无法修复时提供一次同等规格换新；维修及换新累计不超过主商品实付金额的 80%。", fulfillment:"维修后换新", coverageLimit:"主商品实付金额 × 80%", period:"2年", priceRange:"1000–2000元", underwriting:"通过", relationship:"线上替代品", comparisonTarget:"直接整机换新保障（示例在售款）", relationshipReason:"以先修后换的履约路径替代直接换新，保留维修失败的结果兜底。" }),
-  withDetails({ id:"DEMO-TR-003", name:"主板电控面板2年核心部件保", price:"¥195.82", serviceContent:"原厂质保结束后两年内，对主板、电控和面板的约定质量故障提供专项维修。累计不超过主商品实付金额的 60%；其他部件和意外损坏不在范围内。", fulfillment:"专项维修", coverageLimit:"主商品实付金额 × 60%", period:"2年", priceRange:"1000–2000元", underwriting:"通过", relationship:"线上互补品", comparisonTarget:"翻译机首年意外保（示例在售款）", relationshipReason:"补充原厂到期后的核心部件质量故障，与首年意外保障在时间和责任上互补；价格优势仍需报价验证。" }),
+  withDetails({ id:"DEMO-TR-001", name:"原厂到期2年延长保修", price:"¥167.85", coverageRatio:"11.19%", salesChannels:["C加购", "物流"], serviceContent:"原厂质保结束后，连续两年覆盖约定的机械或电气故障，提供检测及维修服务。累计维修金额不超过主商品实付金额的 80%，不包含意外损坏和耗材自然衰减。", fulfillment:"维修", coverageLimit:"主商品实付金额 × 80%", period:"2年", priceRange:"1000–2000元", underwriting:"通过", relationship:"线上互补品", comparisonTarget:"原厂一年质保（示例在售服务）", relationshipReason:"向后延续保修时间，补足原厂质保结束后的服务空档。" }),
+  withDetails({ id:"DEMO-TR-002", name:"原厂到期2年质保换新兜底", price:"¥196.20", coverageRatio:"13.08%", salesChannels:["C补购", "电销"], serviceContent:"原厂质保结束后两年内发生约定的机械或电气故障，先行维修。经授权检测无法修复时提供一次同等规格换新；维修及换新累计不超过主商品实付金额的 80%。", fulfillment:"维修后换新", coverageLimit:"主商品实付金额 × 80%", period:"2年", priceRange:"1000–2000元", underwriting:"通过", relationship:"线上替代品", comparisonTarget:"直接整机换新保障（示例在售款）", relationshipReason:"以先修后换的履约路径替代直接换新，保留维修失败的结果兜底。" }),
+  withDetails({ id:"DEMO-TR-003", name:"主板电控面板2年核心部件保", price:"¥195.82", coverageRatio:"13.05%", salesChannels:["B集采", "物流"], serviceContent:"原厂质保结束后两年内，对主板、电控和面板的约定质量故障提供专项维修。累计不超过主商品实付金额的 60%；其他部件和意外损坏不在范围内。", fulfillment:"专项维修", coverageLimit:"主商品实付金额 × 60%", period:"2年", priceRange:"1000–2000元", underwriting:"通过", relationship:"线上互补品", comparisonTarget:"翻译机首年意外保（示例在售款）", relationshipReason:"补充原厂到期后的核心部件质量故障，与首年意外保障在时间和责任上互补；价格优势仍需报价验证。" }),
 ];
 
 const rawCases: Array<Omit<DesignCase,"document">> = [
@@ -115,7 +116,7 @@ const rawCases: Array<Omit<DesignCase,"document">> = [
 
 export function makeDocument(data: Omit<DesignCase,"document">): DesignDocument {
   const name = `${data.category}·${data.products.length ? "产品方案决策书" : "设计记录与补数清单"}.md`;
-  const products = data.products.map(product => `### ${product.name}\n\n- 产品 ID：${product.id}\n- 建议单价：${product.price}\n- 履约方式：${product.fulfillment}\n- 保障上限：${product.coverageLimit}\n- 服务有效期：${product.period}\n- 型号/价位段：${product.priceRange}\n- 渠道：${product.details?.channels ?? "按实际场景确认"}\n- 定位：${[product.recommended ? "优先推荐" : "",product.relationship].filter(Boolean).join("、") || "候选方案"}\n- 对标对象：${product.comparisonTarget ?? "未指定"}\n\n${product.relationshipReason ?? ""}\n\n**服务内容**\n\n${product.serviceContent}\n\n**不包含**\n\n${product.details?.exclusions ?? "以完整责任文本为准"}`).join("\n\n");
+  const products = data.products.map(product => `### ${product.name}\n\n- 产品 ID：${product.id}\n- 建议单价：${product.price}\n- 投保比例：${product.coverageRatio}\n- 履约方式：${product.fulfillment}\n- 保障上限：${product.coverageLimit}\n- 服务有效期：${product.period}\n- 型号/价位段：${product.priceRange}\n- 销售渠道：${product.salesChannels.join("、")}\n- 定位：${[product.recommended ? "优先推荐" : "",product.relationship].filter(Boolean).join("、") || "候选方案"}\n- 对标对象：${product.comparisonTarget ?? "未指定"}\n\n${product.relationshipReason ?? ""}\n\n**服务内容**\n\n${product.serviceContent}\n\n**不包含**\n\n${product.details?.exclusions ?? "以完整责任文本为准"}`).join("\n\n");
   const evidence = data.evidence.map((item,index) => `### 依据 ${index+1}：${item.title}\n\n${item.source}\n\n${item.content}\n\n**边界**：${item.limitation}`).join("\n\n");
   return { name, markdown:`# ${data.title}\n\n> Demo 演示资料：用于体验产品设计流程，不代表真实经营数据、正式定价或核保结论。\n\n${data.answerMarkdown}\n\n## 设计范围\n\n${data.plan.scope}\n\n${data.plan.note ? `${data.plan.note}\n\n` : ""}${data.actionRequired ? `## ${data.actionRequired.title}\n\n${data.actionRequired.body}\n\n` : ""}${products ? `## 产品方案\n\n${products}\n\n` : ""}## 依据与未验证边界\n\n${evidence}` };
 }
@@ -167,7 +168,7 @@ export function getAdjustedCase(id?: string, adjustments: string[] = []): Design
     if (original.id === "vinyl") plan = {...plan,steps:plan.steps.map((step,index) => index === 2
       ? {title:channel === "C 延保随单购" ? "确定随单优先款" : "确定补购优先款",description:channel === "C 延保随单购" ? "围绕新购用户，给出三款随单加购方案及推荐顺序。" : "核对已有设备与适用型号，给出三款电销补购方案及推荐顺序。"}
       : step)};
-    products = products.map(product => ({...product,id:`${product.id}-${channel === "C 延保随单购" ? "C" : "T"}`,details:product.details ? {...product.details,channels:channel} : undefined}));
+    products = products.map(product => ({...product,id:`${product.id}-${channel === "C 延保随单购" ? "C" : "T"}`,salesChannels:[channel === "C 延保随单购" ? "C加购" : "电销"]}));
     answerMarkdown = answerMarkdown.replace("适合先作为随单加购方案验证需求；电销可承接后续补购", channel === "C 延保随单购" ? "本轮仅作为 C 延保随单加购方案验证需求" : "本轮面向已有设备用户，通过电销核对适用型号与当前设备状况后再补购");
     answerMarkdown += `\n\n本轮仅考虑 **${channel}**，渠道适用性仍需后续核验。`;
     process = process.map(step => ({...step,summary:step.summary.replace(/C 延保(?:及|和)电销/g,channel)}));

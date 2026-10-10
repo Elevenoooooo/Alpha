@@ -66,9 +66,11 @@ const journeyOptions: Record<Journey, JourneyOption> = {
         label: "从类目找机会",
         segments: [
           { type: "text", content: "判断" },
+          { type: "slot", key: "channel", placeholder: "销售渠道", required: true, width: 126 },
+          { type: "text", content: "下" },
           { type: "slot", key: "category", placeholder: "填写类目", required: true, width: 118 },
           { type: "text", content: "的延保机会。" },
-          { type: "slot", key: "scene", prefix: "重点关注：", suffix: "。", placeholder: "渠道 / 场景，可留空", required: false, width: 172 },
+          { type: "slot", key: "focus", prefix: "重点关注：", suffix: "。", placeholder: "用户痛点 / 差异化方向，可留空", required: false, width: 190 },
         ],
       },
       {
@@ -77,6 +79,8 @@ const journeyOptions: Record<Journey, JourneyOption> = {
         description: "直接生成 · 无计划",
         segments: [
           { type: "text", content: "快速为" },
+          { type: "slot", key: "channel", placeholder: "销售渠道", required: true, width: 126 },
+          { type: "text", content: "下的" },
           { type: "slot", key: "category", placeholder: "填写类目", required: true, width: 118 },
           { type: "text", content: "设计一款" },
           { type: "slot", key: "goal", placeholder: "引流 / 利润 / 保障", required: true, width: 164 },
@@ -90,6 +94,8 @@ const journeyOptions: Record<Journey, JourneyOption> = {
         description: "计划执行 · 产品卡",
         segments: [
           { type: "text", content: "为" },
+          { type: "slot", key: "channel", placeholder: "销售渠道", required: true, width: 126 },
+          { type: "text", content: "下的" },
           { type: "slot", key: "category", placeholder: "填写类目", required: true, width: 118 },
           { type: "text", content: "完整设计一套" },
           { type: "slot", key: "goal", placeholder: "引流 / 利润 / 保障", required: true, width: 164 },
@@ -131,14 +137,16 @@ const journeyOptions: Record<Journey, JourneyOption> = {
       },
       {
         id: "analysis-compare",
-        label: "做类目对比",
+        label: "看周期变化",
         segments: [
           { type: "text", content: "对比" },
-          { type: "slot", key: "targetA", placeholder: "对象 A", required: true, width: 118 },
+          { type: "slot", key: "category", placeholder: "填写类目", required: true, width: 118 },
+          { type: "text", content: "在" },
+          { type: "slot", key: "periodA", placeholder: "周期 A", required: true, width: 112 },
           { type: "text", content: "和" },
-          { type: "slot", key: "targetB", placeholder: "对象 B", required: true, width: 118 },
-          { type: "text", content: "的经营表现。" },
-          { type: "slot", key: "period", prefix: "对比周期：", suffix: "。", placeholder: "可留空", required: false, width: 136 },
+          { type: "slot", key: "periodB", placeholder: "周期 B", required: true, width: 112 },
+          { type: "text", content: "的经营表现，" },
+          { type: "slot", key: "focus", prefix: "重点关注：", suffix: "。", placeholder: "指标 / 经营现象，可留空", required: false, width: 174 },
         ],
       },
     ],

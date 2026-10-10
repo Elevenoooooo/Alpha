@@ -46,16 +46,15 @@ export function ProductShelf({
           <article className={`product-plan-card ${product.recommended ? "is-recommended" : ""} ${product.used ? "is-used" : ""}`} key={product.id}>
             <div className="design-product-tags">
               {product.recommended && <span className="recommend-tag">优先推荐</span>}
-              {product.relationship && <span className={product.relationship === "线上互补品" ? "complement-tag" : "substitute-tag"} title={product.relationshipReason}>{product.relationship}</span>}
             </div>
-            <div className="product-title-row"><h4>{product.name}</h4><strong>{product.price}</strong></div>
-            <div className="product-id">产品ID：{product.id}</div>
+            <div className="product-title-row"><h4>{product.name}</h4><strong className="product-coverage-ratio"><span>投保比例</span>{product.coverageRatio}</strong></div>
+            <div className="product-id">ID：{product.id}</div>
             <p>{product.serviceContent}</p>
             <dl>
               <div><dt>履约方式</dt><dd>{product.fulfillment}</dd></div>
               <div><dt>保障上限</dt><dd>{product.coverageLimit}</dd></div>
               <div><dt>服务有效期</dt><dd>{product.period}</dd></div>
-              <div><dt>型号/价位段</dt><dd>{product.priceRange}</dd></div>
+              <div className="product-channel-row"><dt>销售渠道</dt><dd className="product-channel-list">{product.salesChannels.map(channel => <span key={channel}>{channel}</span>)}</dd></div>
             </dl>
             <div className="product-card-actions">
               <button onClick={() => onDetail(product)}><FileSearch />查看详情</button>

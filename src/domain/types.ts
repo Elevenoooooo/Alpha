@@ -1,11 +1,23 @@
-export type AppView = "home" | "conversation" | "products" | "wiki";
+export type AppView = "home" | "conversation" | "products" | "wiki" | "settings";
 
 export type ProductStatus = "待询价" | "询价中" | "询价通过" | "询价失败";
+
+export const SALES_CHANNEL_OPTIONS = [
+  "C加购",
+  "C补购",
+  "B集采",
+  "物流",
+  "电销",
+] as const;
+
+export type SalesChannel = (typeof SALES_CHANNEL_OPTIONS)[number];
 
 export type Product = {
   id: string;
   name: string;
   price: string;
+  coverageRatio: string;
+  salesChannels: SalesChannel[];
   serviceContent: string;
   fulfillment: string;
   coverageLimit: string;
@@ -25,8 +37,9 @@ export type Product = {
     underwritingCategory: string;
     waitingPeriod: string;
     paymentMethod: string;
+    processingMethod: string;
+    serviceMethod: string;
     exclusions: string;
-    channels: string;
     underwritingNote: string;
   };
 };
