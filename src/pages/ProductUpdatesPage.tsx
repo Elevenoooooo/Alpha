@@ -1,24 +1,5 @@
-import type { LucideIcon } from "lucide-react";
 import { useRef, useState } from "react";
-import {
-  BadgePercent,
-  Brain,
-  ChartNoAxesCombined,
-  CheckCheck,
-  CloudUpload,
-  CopyCheck,
-  FileStack,
-  House,
-  ImagePlus,
-  ListChecks,
-  MessageSquareMore,
-  PackageCheck,
-  RefreshCw,
-  SearchCheck,
-  Sparkles,
-  SquareMousePointer,
-  WandSparkles,
-} from "lucide-react";
+import { Sparkles } from "lucide-react";
 
 type UpdateItem = {
   number: string;
@@ -32,7 +13,6 @@ type UpdateItem = {
   changes?: ReadonlyArray<readonly [string, string]>;
   changeLabel?: string;
   mediaSlots?: number;
-  icon: LucideIcon;
   tone: string;
 };
 
@@ -44,7 +24,6 @@ const octoberUpdates: readonly UpdateItem[] = [
     description: "在会话框中选择并调用所需专业技能。",
     note: "当前支持：保险咨询｜星河数据服务",
     mediaSlots: 1,
-    icon: WandSparkles,
     tone: "violet",
   },
   {
@@ -59,7 +38,6 @@ const octoberUpdates: readonly UpdateItem[] = [
       ["文档", "PDF、DOCX、DOC、TXT、MD"],
     ],
     mediaSlots: 2,
-    icon: FileStack,
     tone: "blue",
   },
   {
@@ -69,7 +47,6 @@ const octoberUpdates: readonly UpdateItem[] = [
     description: "优化回答结构与信息密度，减少冗余表达。关键结论用黑体强调，帮助用户快速识别结论和差异。",
     highlights: ["结构优化", "重点加粗", "降低阅读负担"],
     mediaSlots: 1,
-    icon: Sparkles,
     tone: "amber",
   },
   {
@@ -83,7 +60,6 @@ const octoberUpdates: readonly UpdateItem[] = [
       ["价格段", "销售渠道"],
     ],
     mediaSlots: 1,
-    icon: BadgePercent,
     tone: "rose",
   },
   {
@@ -93,7 +69,6 @@ const octoberUpdates: readonly UpdateItem[] = [
     description: "在 Alpha 发起询报价后，可以继续查看对应的询价任务、产品信息、处理状态和询价详情，减少在多个系统之间查找任务的成本。",
     highlights: ["询价任务", "处理状态", "询价详情"],
     mediaSlots: 2,
-    icon: SearchCheck,
     tone: "cyan",
   },
   {
@@ -103,7 +78,6 @@ const octoberUpdates: readonly UpdateItem[] = [
     description: "询报价完成的产品，可一键同步配品至产品库，减少重复配品和信息录入操作。",
     highlights: ["信息确认", "一键同步", "减少重复操作"],
     mediaSlots: 1,
-    icon: CloudUpload,
     tone: "green",
   },
   {
@@ -113,7 +87,6 @@ const octoberUpdates: readonly UpdateItem[] = [
     description: "Alpha 根据历史会话不断沉淀用户的负责品类和协作偏好，使Alpha越用越懂你；用户可以在设置中查看个性化记忆。",
     highlights: ["岗位与职责", "负责品类", "协作偏好"],
     mediaSlots: 1,
-    icon: Brain,
     tone: "indigo",
   },
 ];
@@ -126,7 +99,6 @@ const augustUpdates: readonly UpdateItem[] = [
     description: "用户可直接用自然语言描述任意关于类目机会、产品需求或经营等问题。Alpha 通过多轮对话补充条件、确认分析路径，协助完成产品方案设计或经营分析。",
     highlights: ["产品设计", "经营分析", "多轮对话"],
     mediaSlots: 2,
-    icon: MessageSquareMore,
     tone: "violet",
   },
   {
@@ -136,7 +108,6 @@ const augustUpdates: readonly UpdateItem[] = [
     description: "首页提供延保产品设计和经营分析相关的推荐问题，帮助用户从常见业务场景快速发起任务，降低首次使用和问题表达门槛。",
     highlights: ["场景推荐", "快速开始", "降低使用门槛"],
     mediaSlots: 1,
-    icon: House,
     tone: "blue",
   },
   {
@@ -146,7 +117,6 @@ const augustUpdates: readonly UpdateItem[] = [
     description: "在任务开始前展示计划清单，由用户确认后再执行；长文本中的关键数据增加来源角标，帮助用户核对依据。产品设计任务可以生成结构化产品卡片，经营分析任务则进一步形成分析文档。",
     highlights: ["计划确认", "数据来源", "产品卡片", "分析文档"],
     mediaSlots: 4,
-    icon: ListChecks,
     tone: "amber",
   },
   {
@@ -156,7 +126,6 @@ const augustUpdates: readonly UpdateItem[] = [
     description: "在回答过程中展示任务理解、分析步骤和执行进度，让用户了解 Alpha 正在处理什么、当前进行到哪一步，以及最终结论是如何形成的。",
     highlights: ["任务拆解", "执行进度", "过程透明"],
     mediaSlots: 2,
-    icon: ChartNoAxesCombined,
     tone: "cyan",
   },
   {
@@ -166,7 +135,6 @@ const augustUpdates: readonly UpdateItem[] = [
     description: "用户可以对回答进行点赞或点踩，反馈结果是否有帮助；同时支持一键复制回答内容，方便继续整理、分享或用于后续业务沟通。",
     highlights: ["点赞", "点踩", "复制"],
     mediaSlots: 1,
-    icon: CopyCheck,
     tone: "green",
   },
   {
@@ -176,7 +144,6 @@ const augustUpdates: readonly UpdateItem[] = [
     description: "产品设计任务中采用的方案会进入“我的产品”。用户可以集中查看待询价产品，并通过侧边栏继续调整产品名称、服务内容和关键产品信息。",
     highlights: ["我的产品", "待询价方案", "侧边栏调整"],
     mediaSlots: 2,
-    icon: PackageCheck,
     tone: "rose",
   },
   {
@@ -186,7 +153,6 @@ const augustUpdates: readonly UpdateItem[] = [
     description: "对于需要调整的询价产品，用户可以一键返回原始会话继续修改，无需重新描述业务背景。",
     highlights: ["返回原会话", "继承上下文", "继续优化"],
     mediaSlots: 1,
-    icon: RefreshCw,
     tone: "indigo",
   },
   {
@@ -196,7 +162,6 @@ const augustUpdates: readonly UpdateItem[] = [
     description: "待询价产品确认完成后，可以直接从 Alpha 发起询报价，将已经形成的产品方案继续推进到业务询报价环节，减少跨系统重复录入。",
     highlights: ["一键询报价", "方案衔接", "减少重复录入"],
     mediaSlots: 1,
-    icon: SquareMousePointer,
     tone: "blue",
   },
   {
@@ -206,7 +171,6 @@ const augustUpdates: readonly UpdateItem[] = [
     description: "“我的产品”按照待询价、询价中、询价通过和询价失败展示产品状态，用户可以持续了解不同产品方案的处理进度。",
     highlights: ["待询价", "询价中", "询价通过", "询价失败"],
     mediaSlots: 1,
-    icon: CheckCheck,
     tone: "green",
   },
 ];
@@ -216,7 +180,6 @@ function UpdateMedia({ count = 1, title }: { count?: number; title: string }) {
     <div className={`update-media-grid slots-${count}`}>
       {Array.from({ length: count }, (_, index) => (
         <div className="update-image-placeholder" aria-label={`${title}图片${index + 1}待补充`} key={index}>
-          <ImagePlus />
           <span>{count > 1 ? `图片 ${index + 1} 待补充` : "图片待补充"}</span>
         </div>
       ))}
@@ -225,25 +188,16 @@ function UpdateMedia({ count = 1, title }: { count?: number; title: string }) {
 }
 
 function UpdateCard({ update }: { update: UpdateItem }) {
-  const Icon = update.icon;
   return (
     <article className={`update-card tone-${update.tone}`}>
       <div className="update-card-copy">
         <header>
-          <span className="update-card-icon"><Icon /></span>
           <span className="update-card-index">{update.number}</span>
         </header>
-        <span className="update-card-category">{update.category}</span>
         <h2>{update.title}</h2>
         <p>{update.description}</p>
 
         {update.note && <p className="update-card-note">{update.note}</p>}
-
-        {update.highlights && (
-          <div className="update-highlight-list">
-            {update.highlights.map((item) => <span key={item}>{item}</span>)}
-          </div>
-        )}
 
         {update.groups && (
           <div className="update-detail-block">
@@ -278,14 +232,12 @@ function ReleaseSection({
   date,
   dateTime,
   version,
-  isLatest = false,
   updates,
 }: {
   id: string;
   date: string;
   dateTime: string;
   version: string;
-  isLatest?: boolean;
   updates: readonly UpdateItem[];
 }) {
   return (
@@ -293,7 +245,6 @@ function ReleaseSection({
       <header className="updates-release-head">
         <div>
           <time dateTime={dateTime}>{date}</time>
-          {isLatest && <span>最新</span>}
         </div>
         <strong>{version}</strong>
       </header>
@@ -319,10 +270,9 @@ export function ProductUpdatesPage() {
   return (
     <section className="product-updates-page" onScroll={syncActiveVersion} ref={pageRef}>
       <header className="updates-hero">
-        <span className="updates-eyebrow"><Sparkles /> Alpha · What's new</span>
+        <span className="updates-eyebrow"><Sparkles /> Alpha · What happened</span>
         <h1>产品动态</h1>
         <p>了解 Alpha 最新能力与版本更新</p>
-        <span className="updates-meta">2 个版本 <i /> 16 项能力</span>
       </header>
 
       <div className="updates-layout">
@@ -339,7 +289,7 @@ export function ProductUpdatesPage() {
         </aside>
 
         <div className="updates-releases">
-          <ReleaseSection id="alpha-update-1015" date="2026年10月15日" dateTime="2026-10-15" version="V1.1" isLatest updates={octoberUpdates} />
+          <ReleaseSection id="alpha-update-1015" date="2026年10月15日" dateTime="2026-10-15" version="V1.1" updates={octoberUpdates} />
           <ReleaseSection id="alpha-update-0828" date="2026年8月28日" dateTime="2026-08-28" version="V1.0" updates={augustUpdates} />
         </div>
       </div>
