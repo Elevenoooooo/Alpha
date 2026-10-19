@@ -185,7 +185,7 @@ function cleanTemplatePrompt(action: StarterAction, draft: string) {
 }
 
 export function HomePage() {
-  const { startProductTask, startWikiTask, notify, wikiPages } = useWorkbench();
+  const { startProductTask, startWikiTask, notify, wikiPages, guideRequest } = useWorkbench();
   const [input, setInput] = useState("");
   const [attachment, setAttachment] = useState<ComposerAttachment>();
   const [selectedSkill, setSelectedSkill] = useState<ComposerSkill>();
@@ -197,6 +197,10 @@ export function HomePage() {
   const [templateFocusRequest, setTemplateFocusRequest] = useState(0);
   const [guideOpen, setGuideOpen] = useState(false);
   const composerSectionRef = useRef<HTMLElement>(null);
+
+  useEffect(() => {
+    if (guideRequest > 0) setGuideOpen(true);
+  }, [guideRequest]);
 
   const selectedAction = selectedTemplateId
     ? allStarterActions.find((action) => action.id === selectedTemplateId)

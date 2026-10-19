@@ -8,6 +8,7 @@ import { WorkbenchProvider, useWorkbench } from "./context/WorkbenchContext";
 import { ConversationPage } from "./pages/ConversationPage";
 import { HomePage } from "./pages/HomePage";
 import { ProductsPage } from "./pages/ProductsPage";
+import { ProductUpdatesPage } from "./pages/ProductUpdatesPage";
 import { WikiPage } from "./pages/WikiPage";
 import { SettingsPage } from "./pages/SettingsPage";
 import type { AppView } from "./domain/types";
@@ -53,6 +54,7 @@ function WorkbenchApp() {
         {view === "conversation" && <ConversationPage />}
         {view === "products" && <ProductsPage />}
         {view === "wiki" && <WikiPage />}
+        {view === "updates" && <ProductUpdatesPage />}
       </main>
       {flash && <div className="toast" role="status">{flash}</div>}
     </div>

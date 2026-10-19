@@ -67,6 +67,8 @@ type WorkbenchValue = {
   approveWiki: (comment?: string) => void;
   rejectWiki: (comment: string) => void;
   requestRollback: (pageId: string, version: number, submitter?: string) => void;
+  guideRequest: number;
+  openGuide: () => void;
   flash?: string;
   notify: (message: string) => void;
 };
@@ -138,11 +140,17 @@ export function WorkbenchProvider({ children }: { children: ReactNode }) {
   const [wikiTask, setWikiTask] = useState<WikiTask>();
   const [approval, setApproval] = useState<WikiApproval>();
   const [approvalHistory, setApprovalHistory] = useState<WikiApproval[]>([]);
+  const [guideRequest, setGuideRequest] = useState(0);
   const [flash, setFlash] = useState<string>();
 
   const notify = useCallback((message: string) => {
     setFlash(message);
     window.setTimeout(() => setFlash(undefined), 3000);
+  }, []);
+
+  const openGuide = useCallback(() => {
+    setView("home");
+    setGuideRequest((request) => request + 1);
   }, []);
 
   useEffect(() => {
@@ -528,6 +536,8 @@ export function WorkbenchProvider({ children }: { children: ReactNode }) {
       approveWiki,
       rejectWiki,
       requestRollback,
+      guideRequest,
+      openGuide,
       flash,
       notify,
     }),
@@ -540,7 +550,9 @@ export function WorkbenchProvider({ children }: { children: ReactNode }) {
       reviseProductTask,
       productHistory,
       flash,
+      guideRequest,
       notify,
+      openGuide,
       pauseWikiTask,
       plans,
       productFlow,

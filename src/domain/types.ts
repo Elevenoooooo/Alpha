@@ -1,4 +1,4 @@
-export type AppView = "home" | "conversation" | "products" | "wiki" | "settings";
+export type AppView = "home" | "conversation" | "products" | "wiki" | "updates" | "settings";
 
 export type ProductStatus = "待询价" | "询价中" | "询价通过" | "询价失败";
 
