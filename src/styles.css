@@ -42,28 +42,29 @@ svg { width: 1em; height: 1em; stroke-width: 1.8; }
   z-index: 70;
   top: 29px;
   right: max(24px, calc((100% - 220px - 1220px) / 2));
-  min-width: 94px;
-  height: 34px;
+  min-width: 100px;
+  height: 36px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 7px;
-  padding: 0 11px;
-  border: 1px solid rgba(220, 224, 234, .96);
-  border-radius: 10px;
-  background: rgba(255, 255, 255, .88);
-  color: #667287;
-  font-size: 12px;
+  padding: 0 14px;
+  border: 1px solid rgba(218, 214, 247, .96);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, .94);
+  color: #59667a;
+  font-size: 12.5px;
   font-weight: 600;
   line-height: 1;
-  box-shadow: 0 6px 20px rgba(44, 52, 78, .055);
+  box-shadow: 0 7px 22px rgba(67, 60, 118, .065);
   backdrop-filter: blur(14px);
   transition: border-color .18s ease, background .18s ease, color .18s ease, box-shadow .18s ease, transform .18s ease;
 }
-.global-updates-entry svg { width: 14px; height: 14px; stroke-width: 1.9; }
+.global-updates-entry svg { width: 15px; height: 15px; stroke-width: 1.9; }
 .global-updates-entry:hover { border-color: #cbc4fa; background: rgba(255, 255, 255, .98); color: var(--purple); box-shadow: 0 8px 24px rgba(80, 68, 150, .09); transform: translateY(-1px); }
 .global-updates-entry.active { border-color: #cfc8ff; background: #f3f0ff; color: var(--purple); box-shadow: 0 6px 18px rgba(105, 86, 245, .09); }
 .global-updates-entry:focus-visible { outline: 3px solid rgba(105, 86, 245, .18); outline-offset: 2px; }
+.global-updates-dot { position: absolute; top: 3px; right: 5px; width: 7px; height: 7px; border: 0; border-radius: 50%; background: var(--purple); box-shadow: 0 0 0 2px #fff; pointer-events: none; }
 .global-updates-entry-conversation { top: 12px; right: 24px; }
 .home-toolbar, .wiki-page-header { padding-right: 108px; }
 
@@ -957,9 +958,10 @@ button.context-chip { cursor: pointer; }
   .mobile-nav { position: fixed; inset: 0 0 auto 0; z-index: 120; height: 57px; padding: 0 15px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #eceef4; background: rgba(250,251,253,.94); backdrop-filter: blur(16px); }
   .mobile-nav .alpha-brand img { width: 104px; height: 26px; }
   .mobile-nav > div { display: flex; gap: 4px; }
-  .mobile-nav button { min-width: 42px; height: 38px; display: grid; place-items: center; gap: 1px; border: 0; border-radius: 10px; background: transparent; color: #778296; font-size: 8px; }
+  .mobile-nav button { position: relative; min-width: 42px; height: 38px; display: grid; place-items: center; gap: 1px; border: 0; border-radius: 10px; background: transparent; color: #778296; font-size: 8px; }
   .mobile-nav button svg { width: 15px; height: 15px; }
   .mobile-nav button.active { background: #f0edff; color: var(--purple); }
+  .mobile-nav .global-updates-dot { top: 3px; right: 6px; width: 6px; height: 6px; }
   .app-main { padding-top: 57px; }
   .home-content { width: calc(100% - 28px); padding: 18px 0 38px; }
   .home-toolbar { min-height: 32px; }
