@@ -10,7 +10,6 @@ import {
   LockKeyhole,
   MessageCircle,
   MessageSquarePlus,
-  Megaphone,
   PackageCheck,
   Plus,
   Settings2,
@@ -159,7 +158,6 @@ export function Sidebar() {
             <div className="help-popover" role="dialog" aria-label="帮助与支持">
               <header><strong>帮助与支持</strong></header>
               <div className="help-menu">
-                <button onClick={() => { setHelpOpen(false); setView("updates"); }}><span><Megaphone /></span><strong>产品动态</strong><ChevronRight /></button>
                 <button onClick={openManual}><span><BookOpen /></span><strong>使用手册</strong><ChevronRight /></button>
                 <button onClick={() => { setHelpOpen(false); setContactOpen(true); }}><span><MessageCircle /></span><strong>联系我们</strong><ChevronRight /></button>
               </div>
